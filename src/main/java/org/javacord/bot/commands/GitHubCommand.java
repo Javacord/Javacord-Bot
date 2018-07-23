@@ -11,14 +11,14 @@ import org.javacord.bot.Constants;
  */
 public class GitHubCommand implements CommandExecutor {
 
-    @Command(aliases = {"!github"})
-    public void onDocsCommand(TextChannel channel) {
+    @Command(aliases = {"!github"}, async = true)
+    public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .addField("Javacord", "https://github.com/Javacord/Javacord")
                 .addField("Example Bot", "https://github.com/Javacord/JavacordExampleBot")
                 .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                 .setColor(Constants.JAVACORD_ORANGE);
-        channel.sendMessage(embed);
+        channel.sendMessage(embed).join();
     }
 
 }

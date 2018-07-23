@@ -11,14 +11,14 @@ import org.javacord.bot.Constants;
  */
 public class WikiCommand implements CommandExecutor {
 
-    @Command(aliases = {"!wiki"})
-    public void onDocsCommand(TextChannel channel) {
+    @Command(aliases = {"!wiki"}, async = true)
+    public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Javacord Wiki")
                 .setDescription("https://github.com/Javacord/Javacord/wiki")
                 .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                 .setColor(Constants.JAVACORD_ORANGE);
-        channel.sendMessage(embed);
+        channel.sendMessage(embed).join();
     }
 
 }

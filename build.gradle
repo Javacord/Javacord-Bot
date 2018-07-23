@@ -18,6 +18,8 @@ dependencies {
     compile 'de.btobastian.sdcf4j:sdcf4j-core:c967c87dd368aab7fa97794c945fdfb810e27021'
     compile 'de.btobastian.sdcf4j:sdcf4j-javacord:c967c87dd368aab7fa97794c945fdfb810e27021'
     compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.3'
 }
 
 jar {
