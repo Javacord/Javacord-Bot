@@ -10,7 +10,7 @@ public final class Constants {
     /**
      * The "Javacord orange".
      */
-    public static final Color JAVACORD_ORANGE = new Color(245, 161, 40);
+    public static final Color JAVACORD_ORANGE = new Color(243, 189, 30);
 
     private Constants() { /* nope */ }
 
