@@ -19,7 +19,7 @@ You can use Docker to run this bot:
 git clone https://github.com/Javacord/Javacord-Bot.git
 cd Javacord-Bot
 docker build -t javacord-bot .
-docker run --rm --env javacord-bot.env --name javacord-bot javacord-bot
+docker run --rm --env-file javacord-bot.env --name javacord-bot javacord-bot
 ```
 
 Take a look at the `javacord-bot.example.env` file to see how the environment file should look like.
