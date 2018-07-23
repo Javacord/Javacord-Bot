@@ -37,6 +37,27 @@ public class JavadocParser {
     }
 
     /**
+     * Gets the latest JavaDoc link.
+     *
+     * @param api A discord api instance.
+     * @return The latest JavaDoc link.
+     */
+    public static CompletableFuture<String> getLatestJavaDocs(DiscordApi api) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Request request = new Request.Builder()
+                        .url("https://docs.javacord.org/api/")
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                return response.request().url().toString();
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }, api.getThreadPool().getExecutorService());
+    }
+
+    /**
      * Gets a set with all methods.
      *
      * @return A set with all methods.

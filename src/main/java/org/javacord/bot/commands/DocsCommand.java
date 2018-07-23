@@ -58,8 +58,7 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString) {
-        // TODO Dynamically get the correct url
-        Map<String, List<JavadocMethod>> methods = new JavadocParser(api, "https://docs.javacord.org/api/build/4540/")
+        Map<String, List<JavadocMethod>> methods = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
                 .getMethods().join().stream()
                 .filter(method -> method.getFullName().toLowerCase().contains(searchString.toLowerCase()))
                 .sorted(Comparator.comparingInt(method -> method.getName().length()))
@@ -110,8 +109,7 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateClasses(DiscordApi api, EmbedBuilder embed, String searchString) {
-        // TODO Dynamically get the correct url
-        List<JavadocClass> classes = new JavadocParser(api, "https://docs.javacord.org/api/build/4540/")
+        List<JavadocClass> classes = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
                 .getClasses().join().stream()
                 .filter(clazz -> clazz.getName().toLowerCase().contains(searchString.toLowerCase()))
                 .sorted(Comparator.comparingInt(clazz -> clazz.getName().length()))
