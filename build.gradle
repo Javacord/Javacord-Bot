@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+group 'org.javacord'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile 'org.javacord:javacord:3.0.0-SNAPSHOT'
+    compile 'de.btobastian.sdcf4j:sdcf4j-core:c967c87dd368aab7fa97794c945fdfb810e27021'
+    compile 'de.btobastian.sdcf4j:sdcf4j-javacord:c967c87dd368aab7fa97794c945fdfb810e27021'
+    compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
+}
+
+jar {
+    archiveName = 'bot.jar'
+
+    from {
+        configurations.runtime.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    manifest {
+        attributes 'Main-Class': 'org.javacord.bot.Main'
+    }
+
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
