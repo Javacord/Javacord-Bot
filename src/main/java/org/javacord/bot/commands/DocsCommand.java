@@ -6,12 +6,14 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
+import org.javacord.bot.util.discord.PagedEmbed;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,17 +38,20 @@ public class DocsCommand implements CommandExecutor {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                     .setColor(Constants.JAVACORD_ORANGE);
+            PagedEmbed pagedEmbed = new PagedEmbed(channel, embed);
             if (args[0].matches("(classes|class|c)")) { // Search for a class
                 String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
                 populateClasses(channel.getApi(), embed, searchString);
+                channel.sendMessage(embed).join();
             } else if (args[0].matches("(methods|method|m)")) { // Search for a method
                 String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                populateMethods(channel.getApi(), embed, searchString);
+                populateMethods(channel.getApi(), pagedEmbed, searchString);
+                pagedEmbed.build().join();
             } else { // Search for a method
                 String searchString = String.join(" ", args);
-                populateMethods(channel.getApi(), embed, searchString);
+                populateMethods(channel.getApi(), pagedEmbed, searchString);
+                pagedEmbed.build().join();
             }
-            channel.sendMessage(embed).join();
         }
     }
 
@@ -54,11 +59,12 @@ public class DocsCommand implements CommandExecutor {
      * Populates the methods field inside the given embed.
      *
      * @param api A discord api instance.
-     * @param embed The embed to populate.
+     * @param pEmbed The {@code PagedEmbed} to populate.
      * @param searchString A search string.
      */
-    private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString) {
-        Map<String, List<JavadocMethod>> methods = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
+    private void populateMethods(DiscordApi api, PagedEmbed pEmbed, String searchString) {
+        // TODO Dynamically get the correct url
+        Map<String, List<JavadocMethod>> methods = new JavadocParser(api, "https://docs.javacord.org/api/build/4540/")
                 .getMethods().join().stream()
                 .filter(method -> method.getFullName().toLowerCase().contains(searchString.toLowerCase()))
                 .sorted(Comparator.comparingInt(method -> method.getName().length()))
@@ -66,13 +72,11 @@ public class DocsCommand implements CommandExecutor {
 
 
         if (methods.isEmpty()) {
-            embed.setTitle("Methods");
-            embed.setDescription("No matching methods found!");
+            pEmbed.getEmbed().setTitle("Methods");
+            pEmbed.getEmbed().setDescription("No matching methods found!");
             return;
         }
 
-        int totalTextCount = 0;
-        int classCounter = 0;
         for (Map.Entry<String, List<JavadocMethod>> entry : methods.entrySet()) {
             StringBuilder strBuilder = new StringBuilder();
             int methodCounter = 0;
@@ -88,16 +92,7 @@ public class DocsCommand implements CommandExecutor {
                         .append(")\n");
                 methodCounter++;
             }
-            embed.addField(entry.getKey(), strBuilder.toString());
-            totalTextCount += entry.getKey().length() + strBuilder.length();
-            classCounter++;
-            if (totalTextCount > 5000) { // To prevent hitting the maximum embed size
-                break;
-            }
-        }
-
-        if (methods.size() - classCounter > 0) {
-            embed.addField("And **" + (methods.size() - classCounter) + "** more classes ...", "Maybe try a less generic search?");
+            pEmbed.addField(entry.getKey(), strBuilder.toString());
         }
     }
 
