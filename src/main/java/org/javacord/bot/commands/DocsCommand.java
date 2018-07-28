@@ -4,8 +4,10 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
+import org.javacord.bot.util.CommandHelper;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 public class DocsCommand implements CommandExecutor {
 
     @Command(aliases = {"!docs"}, async = true)
-    public void onCommand(TextChannel channel, String[] args) {
+    public void onCommand(TextChannel channel, Message commandMessage, String[] args) {
         if (args.length == 0) { // Just give an overview
             EmbedBuilder embed = new EmbedBuilder()
                     .addField("Overview", "https://docs.javacord.org/")
@@ -31,7 +33,7 @@ public class DocsCommand implements CommandExecutor {
                     .addField("Tipp", "You can search the docs using `!docs [method|class] <search>`")
                     .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                     .setColor(Constants.JAVACORD_ORANGE);
-            channel.sendMessage(embed).join();
+            CommandHelper.messageCleanup(commandMessage, channel.sendMessage(embed).join());
         } else { // Search
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
@@ -46,7 +48,7 @@ public class DocsCommand implements CommandExecutor {
                 String searchString = String.join(" ", args);
                 populateMethods(channel.getApi(), embed, searchString);
             }
-            channel.sendMessage(embed).join();
+            CommandHelper.messageCleanup(commandMessage, channel.sendMessage(embed).join());
         }
     }
 
