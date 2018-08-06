@@ -9,14 +9,13 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'org.javacord:javacord:3.0.0-SNAPSHOT'
-    implementation 'de.btobastian.sdcf4j:sdcf4j-core:6a08a94fdca32cf3cccce31a5d02afa9d172b00b'
-    implementation 'de.btobastian.sdcf4j:sdcf4j-javacord:6a08a94fdca32cf3cccce31a5d02afa9d172b00b'
+    implementation 'org.javacord:javacord:3.0.0'
+    implementation 'de.btobastian.sdcf4j:sdcf4j-core:v1.0.10'
+    implementation 'de.btobastian.sdcf4j:sdcf4j-javacord:v1.0.10'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.3'
