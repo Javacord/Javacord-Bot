@@ -61,6 +61,7 @@ public class DocsCommand implements CommandExecutor {
         Map<String, List<JavadocMethod>> methods = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
                 .getMethods().join().stream()
                 .filter(method -> method.getFullName().toLowerCase().contains(searchString.toLowerCase()))
+                .filter(method -> !method.getPackageName().contains("internal"))
                 .sorted(Comparator.comparingInt(method -> method.getName().length()))
                 .collect(Collectors.groupingBy(JavadocMethod::getClassName));
 
@@ -112,6 +113,7 @@ public class DocsCommand implements CommandExecutor {
         List<JavadocClass> classes = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
                 .getClasses().join().stream()
                 .filter(clazz -> clazz.getName().toLowerCase().contains(searchString.toLowerCase()))
+                .filter(clazz -> !clazz.getPackageName().contains("internal"))
                 .sorted(Comparator.comparingInt(clazz -> clazz.getName().length()))
                 .collect(Collectors.toList());
 
