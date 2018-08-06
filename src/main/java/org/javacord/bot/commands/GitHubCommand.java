@@ -15,7 +15,7 @@ public class GitHubCommand implements CommandExecutor {
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .addField("Javacord", "https://github.com/Javacord/Javacord")
-                .addField("Example Bot", "https://github.com/Javacord/JavacordExampleBot")
+                .addField("Example Bot", "https://github.com/Javacord/Example-Bot")
                 .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                 .setColor(Constants.JAVACORD_ORANGE);
         channel.sendMessage(embed).join();

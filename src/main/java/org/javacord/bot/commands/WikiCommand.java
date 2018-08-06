@@ -15,7 +15,7 @@ public class WikiCommand implements CommandExecutor {
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Javacord Wiki")
-                .setDescription("https://github.com/Javacord/Javacord/wiki")
+                .setDescription("https://javacord.org/wiki")
                 .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                 .setColor(Constants.JAVACORD_ORANGE);
         channel.sendMessage(embed).join();
