@@ -5,7 +5,7 @@ This is the bot used on the Javacord server.
 In this case you are wrong here. Just head over to the [Javacord repository](https://github.com/Javacord/Javacord).
 
 ## What's the difference to the example bot
-The [example bot](https://github.com/Javacord/JavacordExampleBot) is exactly what its name suggests: A bot which
+The [example bot](https://github.com/Javacord/Example-Bot) is exactly what its name suggests: A bot which
 is solely used as an example for Javacord. It tries to cover some basic concepts to give you an idea how a
 bot in Javacord may look like. It's kept simple and has very verbose comments.
 
