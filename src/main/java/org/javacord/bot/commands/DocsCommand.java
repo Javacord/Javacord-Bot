@@ -5,6 +5,7 @@ import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
@@ -23,30 +24,36 @@ public class DocsCommand implements CommandExecutor {
 
     @Command(aliases = {"!docs"}, async = true)
     public void onCommand(TextChannel channel, String[] args) {
-        if (args.length == 0) { // Just give an overview
-            EmbedBuilder embed = new EmbedBuilder()
-                    .addField("Overview", "https://docs.javacord.org/")
-                    .addField("Latest release version", "https://docs.javacord.org/api/v/latest")
-                    .addField("Latest snapshot", "https://docs.javacord.org/api/build/latest")
-                    .addField("Tipp", "You can search the docs using `!docs [method|class] <search>`")
-                    .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                    .setColor(Constants.JAVACORD_ORANGE);
-            channel.sendMessage(embed).join();
-        } else { // Search
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                    .setColor(Constants.JAVACORD_ORANGE);
-            if (args[0].matches("(classes|class|c)")) { // Search for a class
-                String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                populateClasses(channel.getApi(), embed, searchString);
-            } else if (args[0].matches("(methods|method|m)")) { // Search for a method
-                String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                populateMethods(channel.getApi(), embed, searchString);
-            } else { // Search for a method
-                String searchString = String.join(" ", args);
-                populateMethods(channel.getApi(), embed, searchString);
+        try {
+            if (args.length == 0) { // Just give an overview
+                EmbedBuilder embed = new EmbedBuilder()
+                        .addField("Overview", "https://docs.javacord.org/")
+                        .addField("Latest release version", "https://docs.javacord.org/api/v/latest")
+                        .addField("Latest snapshot", "https://docs.javacord.org/api/build/latest")
+                        .addField("Tipp", "You can search the docs using `!docs [method|class] <search>`")
+                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
+                        .setColor(Constants.JAVACORD_ORANGE);
+                channel.sendMessage(embed).join();
+            } else { // Search
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
+                        .setColor(Constants.JAVACORD_ORANGE);
+                if (args[0].matches("(classes|class|c)")) { // Search for a class
+                    String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                    populateClasses(channel.getApi(), embed, searchString);
+                } else if (args[0].matches("(methods|method|m)")) { // Search for a method
+                    String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                    populateMethods(channel.getApi(), embed, searchString);
+                } else { // Search for a method
+                    String searchString = String.join(" ", args);
+                    populateMethods(channel.getApi(), embed, searchString);
+                }
+                channel.sendMessage(embed).join();
             }
-            channel.sendMessage(embed).join();
+        } catch (Throwable t) {
+            channel.sendMessage("Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```").join();
+            // Throw the caught exception again. The sdcf4j will log it.
+            throw t;
         }
     }
 
