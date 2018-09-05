@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.bot.commands.DocsCommand;
+import org.javacord.bot.commands.ExampleCommand;
 import org.javacord.bot.commands.GitHubCommand;
 import org.javacord.bot.commands.GradleCommand;
 import org.javacord.bot.commands.InviteCommand;
@@ -32,6 +33,7 @@ public class Main {
         // Register commands
         CommandHandler handler = new JavacordHandler(api);
         handler.registerCommand(new DocsCommand());
+        handler.registerCommand(new ExampleCommand());
         handler.registerCommand(new GitHubCommand());
         handler.registerCommand(new GradleCommand());
         handler.registerCommand(new InviteCommand());
