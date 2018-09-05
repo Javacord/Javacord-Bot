@@ -30,7 +30,7 @@ public class DocsCommand implements CommandExecutor {
                         .addField("Overview", "https://docs.javacord.org/")
                         .addField("Latest release version", "https://docs.javacord.org/api/v/latest")
                         .addField("Latest snapshot", "https://docs.javacord.org/api/build/latest")
-                        .addField("Tipp", "You can search the docs using `!docs [method|class] <search>`")
+                        .addField("Hint", "You can search the docs using `!docs [method|class] <search>`")
                         .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
                         .setColor(Constants.JAVACORD_ORANGE);
                 channel.sendMessage(embed).join();
