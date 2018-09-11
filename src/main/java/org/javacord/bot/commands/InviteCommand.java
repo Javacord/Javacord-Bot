@@ -3,8 +3,10 @@ package org.javacord.bot.commands;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
+import org.javacord.bot.listeners.CommandCleanupListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,16 +20,18 @@ public class InviteCommand implements CommandExecutor {
      * Executes the {@code !invite} command.
      *
      * @param channel The channel where the command was issued.
+     * @param message The message the command was issued in.
      * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
     @Command(aliases = {"!invite"}, async = true)
-    public void onCommand(TextChannel channel) throws IOException {
+    public void onCommand(TextChannel channel, Message message) throws IOException {
         try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon, "png")
                     .setColor(Constants.JAVACORD_ORANGE)
                     .addField("Invite Link", "https://discordapp.com/invite/0qJ2jjyneLEgG7y3");
 
+            CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
         }
     }

@@ -15,6 +15,7 @@ import org.javacord.bot.commands.MavenCommand;
 import org.javacord.bot.commands.Sdcf4jCommand;
 import org.javacord.bot.commands.SetupCommand;
 import org.javacord.bot.commands.WikiCommand;
+import org.javacord.bot.listeners.CommandCleanupListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -71,6 +72,8 @@ public class Main {
         handler.registerCommand(new WikiCommand());
         handler.registerCommand(new Sdcf4jCommand());
         handler.registerCommand(new InfoCommand());
+
+        api.addMessageDeleteListener(new CommandCleanupListener());
     }
 
     private static void setupLogging() throws IOException {

@@ -4,9 +4,11 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
+import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
@@ -32,10 +34,12 @@ public class DocsCommand implements CommandExecutor {
      * The parameters that indicate searching for class names only.
      */
     private static final Set<String> classParams = new HashSet<>(Arrays.asList("classes", "class", "c"));
+
     /**
      * The parameters that indicate searching for method names only.
      */
     private static final Set<String> methodParams = new HashSet<>(Arrays.asList("methods", "method", "m"));
+
     /**
      * The parameters that indicate also searching internal packages and the core docs.
      */
@@ -45,11 +49,12 @@ public class DocsCommand implements CommandExecutor {
      * Executes the {@code !docs} command.
      *
      * @param channel The channel where the command was issued.
+     * @param message The message the command was issued in.
      * @param args    The arguments given to the command.
      * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
     @Command(aliases = {"!docs"}, async = true)
-    public void onCommand(TextChannel channel, String[] args) throws IOException {
+    public void onCommand(TextChannel channel, Message message, String[] args) throws IOException {
         try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon, "png")
@@ -76,6 +81,7 @@ public class DocsCommand implements CommandExecutor {
                     populateMethods(channel.getApi(), embed, searchString, searchAll);
                 }
             }
+            CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
         } catch (Throwable t) {
             channel.sendMessage(

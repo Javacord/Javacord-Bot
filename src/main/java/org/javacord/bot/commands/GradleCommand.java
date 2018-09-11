@@ -4,8 +4,10 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.Javacord;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
+import org.javacord.bot.listeners.CommandCleanupListener;
 
 /**
  * The !gradle command which is used to get information about Javacord with Gradle.
@@ -16,9 +18,10 @@ public class GradleCommand implements CommandExecutor {
      * Executes the {@code !gradle} command.
      *
      * @param channel The channel where the command was issued.
+     * @param message The message the command was issued in.
      */
     @Command(aliases = {"!gradle"}, async = true)
-    public void onCommand(TextChannel channel) {
+    public void onCommand(TextChannel channel, Message message) {
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Dependency",
@@ -33,6 +36,7 @@ public class GradleCommand implements CommandExecutor {
                                 + "```")
                 .addField("Setup Guide", "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-gradle/)");
 
+        CommandCleanupListener.insertResponseTracker(embed, message.getId());
         channel.sendMessage(embed).join();
     }
 

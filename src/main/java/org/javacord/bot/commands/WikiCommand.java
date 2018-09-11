@@ -4,9 +4,11 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
+import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.wiki.parser.WikiPage;
 import org.javacord.bot.util.wiki.parser.WikiParser;
 
@@ -30,11 +32,12 @@ public class WikiCommand implements CommandExecutor {
      *
      * @param api The Discord api.
      * @param channel The channel where the command was issued.
+     * @param message The message triggering the command.
      * @param args The command's arguments.
      * @throws IOException If the connection to the wiki failed.
      */
     @Command(aliases = {"!wiki"}, async = true)
-    public void onCommand(DiscordApi api, TextChannel channel, String[] args) throws IOException {
+    public void onCommand(DiscordApi api, TextChannel channel, Message message, String[] args) throws IOException {
         try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
@@ -64,6 +67,7 @@ public class WikiCommand implements CommandExecutor {
                         populatePages(api, embed, defaultSearch(searchString));
                 }
             }
+            CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
         } catch (Throwable t) {
             channel.sendMessage("Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```")
