@@ -9,7 +9,7 @@ The [example bot](https://github.com/Javacord/Example-Bot) is exactly what its n
 is solely used as an example for Javacord. It tries to cover some basic concepts to give you an idea how a
 bot in Javacord may look like. It's kept simple and has very verbose comments.
 
-This bot however is actually used in out Discord Server and thus may contain a lot of specific features which are 
+This bot however is actually used in our Discord Server and thus may contain a lot of specific features which are 
 most likely not relevant to you. Simplicity also isn't a goal for this bot, but you can still use this bot
 as a reference if you want to.
 
@@ -22,4 +22,4 @@ docker build -t javacord-bot .
 docker run --rm --env-file javacord-bot.env --name javacord-bot javacord-bot
 ```
 
-Take a look at the `javacord-bot.example.env` file to see how the environment file should look like.
+Take a look at the `javacord-bot.example.env` file to see what the environment file should look like.
