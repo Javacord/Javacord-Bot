@@ -12,6 +12,7 @@ import org.javacord.bot.commands.GitHubCommand;
 import org.javacord.bot.commands.GradleCommand;
 import org.javacord.bot.commands.InviteCommand;
 import org.javacord.bot.commands.MavenCommand;
+import org.javacord.bot.commands.Sdcf4jCommand;
 import org.javacord.bot.commands.SetupCommand;
 import org.javacord.bot.commands.WikiCommand;
 
@@ -40,6 +41,7 @@ public class Main {
         handler.registerCommand(new MavenCommand());
         handler.registerCommand(new SetupCommand());
         handler.registerCommand(new WikiCommand());
+        handler.registerCommand(new Sdcf4jCommand());
     }
 
 }
