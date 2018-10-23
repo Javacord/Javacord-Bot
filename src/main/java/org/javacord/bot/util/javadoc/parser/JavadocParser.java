@@ -43,10 +43,24 @@ public class JavadocParser {
      * @return The latest JavaDoc link.
      */
     public static CompletableFuture<String> getLatestJavaDocs(DiscordApi api) {
+        return getJavadocUrl(api, "https://docs.javacord.org/api/");
+    }
+
+    /**
+     * Gets the latest core JavaDoc link.
+     *
+     * @param api A discord api instance.
+     * @return The latest core JavaDoc link.
+     */
+    public static CompletableFuture<String> getLatestCoreJavaDocs(DiscordApi api) {
+        return getJavadocUrl(api, "https://docs.javacord.org/core/");
+    }
+
+    private static CompletableFuture<String> getJavadocUrl(DiscordApi api, String url) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Request request = new Request.Builder()
-                        .url("https://docs.javacord.org/api/")
+                        .url(url)
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {
