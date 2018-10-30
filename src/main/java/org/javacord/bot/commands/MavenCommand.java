@@ -2,6 +2,7 @@ package org.javacord.bot.commands;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
+import org.javacord.api.Javacord;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
@@ -26,7 +27,7 @@ public class MavenCommand implements CommandExecutor {
                                 + "    <groupId>org.javacord</groupId>\n"
                                 + "    <artifactId>javacord</artifactId>\n"
                                 // TODO Always use the latest version
-                                + "    <version>3.0.0</version>\n"
+                                + "    <version>" + Javacord.VERSION + "</version>\n"
                                 + "    <type>pom</type>\n"
                                 + "</dependency>\n"
                                 + "```")

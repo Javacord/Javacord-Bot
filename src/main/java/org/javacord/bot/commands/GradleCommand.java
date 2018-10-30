@@ -2,6 +2,7 @@ package org.javacord.bot.commands;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
+import org.javacord.api.Javacord;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
@@ -27,7 +28,7 @@ public class GradleCommand implements CommandExecutor {
                                 + "}\n"
                                 + "dependencies { \n"
                                 // TODO Always use the latest version
-                                + "  implementation 'org.javacord:javacord:3.0.0'\n"
+                                + "  implementation 'org.javacord:javacord:" + Javacord.VERSION + "'\n"
                                 + "}\n"
                                 + "```")
                 .addField("Setup Guide", "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-gradle/)");
