@@ -15,7 +15,7 @@ public class JavadocClass {
      * Creates a new javadoc class.
      *
      * @param baseUrl The base url of the javadocs.
-     * @param node The node with the information about the class.
+     * @param node    The node with the information about the class.
      */
     public JavadocClass(String baseUrl, JsonNode node) {
         this.baseUrl = baseUrl;

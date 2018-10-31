@@ -11,6 +11,11 @@ import org.javacord.bot.Constants;
  */
 public class ExampleCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !example} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!example"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
@@ -20,4 +25,5 @@ public class ExampleCommand implements CommandExecutor {
 
         channel.sendMessage(embed).join();
     }
+
 }

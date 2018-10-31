@@ -3,6 +3,6 @@ FROM java:8
 COPY . /usr/src/myapp
 WORKDIR /usr/src/myapp
 RUN chmod +x gradlew
-RUN ./gradlew jar
+RUN ./gradlew installDist
 
-CMD java -jar build/libs/bot.jar $TOKEN
+CMD build/install/javacord-bot/bin/javacord-bot $TOKEN

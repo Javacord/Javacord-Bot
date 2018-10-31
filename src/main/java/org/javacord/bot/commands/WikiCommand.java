@@ -11,6 +11,11 @@ import org.javacord.bot.Constants;
  */
 public class WikiCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !wiki} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!wiki"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()

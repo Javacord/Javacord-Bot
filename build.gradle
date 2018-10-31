@@ -1,42 +1,53 @@
 plugins {
-    id 'java'
+    id 'application'
+    id 'checkstyle'
 }
 
 group 'org.javacord'
-version '1.0.0'
+description 'The Javacord Bot'
 
 sourceCompatibility = 1.8
+mainClassName = 'org.javacord.bot.Main'
+defaultTasks 'build'
 
 repositories {
-    mavenCentral()
+    jcenter()
     maven { url 'https://jitpack.io' }
 }
 
-dependencies {
-    implementation 'org.javacord:javacord:3.0.0'
-    implementation 'de.btobastian.sdcf4j:sdcf4j-core:v1.0.10'
-    implementation 'de.btobastian.sdcf4j:sdcf4j-javacord:v1.0.10'
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.3'
+ext {
+    versions = [
+            checkstyle: '8.14',
+            javacord  : '3.0.0',
+            sdcf4j    : 'v1.0.10',
+            okhttp    : '3.9.1',
+            jackson   : '2.9.3',
+            log4j     : '2.11.1'
+    ]
 }
 
-jar {
-    archiveName = 'bot.jar'
+dependencies {
+    implementation "org.javacord:javacord:${versions.javacord}"
+    implementation "de.btobastian.sdcf4j:sdcf4j-javacord:${versions.sdcf4j}"
+    implementation "de.btobastian.sdcf4j:sdcf4j-core:${versions.sdcf4j}"
+    implementation "com.squareup.okhttp3:okhttp:${versions.okhttp}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
+    implementation "org.apache.logging.log4j:log4j-api:${versions.log4j}"
 
-    from {
-        configurations.runtime.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
+    runtimeOnly "org.apache.logging.log4j:log4j-core:${versions.log4j}"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${versions.log4j}"
+}
 
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
+tasks.withType(JavaCompile) {
+    options.encoding 'UTF-8'
+    if (JavaVersion.current().java9Compatible) {
+        afterEvaluate {
+            options.compilerArgs << '--release' << platform.targetCompatibility.majorVersion
         }
     }
+}
 
-    manifest {
-        attributes 'Main-Class': 'org.javacord.bot.Main'
-    }
-
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+checkstyle {
+    toolVersion versions.checkstyle
+    maxWarnings 0
 }

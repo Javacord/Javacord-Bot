@@ -22,6 +22,12 @@ import java.util.stream.Collectors;
  */
 public class DocsCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !docs} command.
+     *
+     * @param channel The channel where the command was issued.
+     * @param args    The arguments given to the command.
+     */
     @Command(aliases = {"!docs"}, async = true)
     public void onCommand(TextChannel channel, String[] args) {
         try {
@@ -51,7 +57,8 @@ public class DocsCommand implements CommandExecutor {
                 channel.sendMessage(embed).join();
             }
         } catch (Throwable t) {
-            channel.sendMessage("Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```").join();
+            channel.sendMessage(
+                    "Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```").join();
             // Throw the caught exception again. The sdcf4j will log it.
             throw t;
         }
@@ -60,8 +67,8 @@ public class DocsCommand implements CommandExecutor {
     /**
      * Populates the methods field inside the given embed.
      *
-     * @param api A discord api instance.
-     * @param embed The embed to populate.
+     * @param api          A discord api instance.
+     * @param embed        The embed to populate.
      * @param searchString A search string.
      */
     private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString) {
@@ -104,15 +111,16 @@ public class DocsCommand implements CommandExecutor {
         }
 
         if (methods.size() - classCounter > 0) {
-            embed.addField("And **" + (methods.size() - classCounter) + "** more classes ...", "Maybe try a less generic search?");
+            embed.addField("And **" + (methods.size() - classCounter) + "** more classes ...",
+                    "Maybe try a less generic search?");
         }
     }
 
     /**
      * Populates the classes field inside the given embed.
      *
-     * @param api A discord api instance.
-     * @param embed The embed to populate.
+     * @param api          A discord api instance.
+     * @param embed        The embed to populate.
      * @param searchString A search string.
      */
     private void populateClasses(DiscordApi api, EmbedBuilder embed, String searchString) {

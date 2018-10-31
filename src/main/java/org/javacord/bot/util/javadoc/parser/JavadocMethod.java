@@ -17,7 +17,7 @@ public class JavadocMethod {
      * Creates a new javadoc method.
      *
      * @param baseUrl The base url of the javadocs.
-     * @param node The node with the information about the method.
+     * @param node    The node with the information about the method.
      */
     public JavadocMethod(String baseUrl, JsonNode node) {
         this.baseUrl = baseUrl;

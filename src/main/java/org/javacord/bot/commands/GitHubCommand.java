@@ -11,6 +11,11 @@ import org.javacord.bot.Constants;
  */
 public class GitHubCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !github} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!github"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()

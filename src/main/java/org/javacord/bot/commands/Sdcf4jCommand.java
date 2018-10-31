@@ -8,6 +8,11 @@ import org.javacord.bot.Constants;
 
 public class Sdcf4jCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !sdcf4j} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!sdcf4j", "!commands"}, async = true)
     public void onCommand(TextChannel channel) {
 

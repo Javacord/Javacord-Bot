@@ -11,23 +11,30 @@ import org.javacord.bot.Constants;
  */
 public class MavenCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !maven} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!maven"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Dependency",
-                          "```xml\n" +
-                           "<dependency>\n" +
-                           "    <groupId>org.javacord</groupId>\n" +
-                           "    <artifactId>javacord</artifactId>\n" +
-                           "    <version>3.0.0</version>\n" + // TODO Always use the latest version
-                           "    <type>pom</type>\n" +
-                           "</dependency>\n" +
-                           "```")
+                        "```xml\n"
+                                + "<dependency>\n"
+                                + "    <groupId>org.javacord</groupId>\n"
+                                + "    <artifactId>javacord</artifactId>\n"
+                                // TODO Always use the latest version
+                                + "    <version>3.0.0</version>\n"
+                                + "    <type>pom</type>\n"
+                                + "</dependency>\n"
+                                + "```")
                 .addField("Setup Guides",
-                          "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-maven/)\n" +
-                          "• [Eclipse](https://javacord.org/wiki/getting-started/eclipse-maven/)");
+                        "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-maven/)\n"
+                                + "• [Eclipse](https://javacord.org/wiki/getting-started/eclipse-maven/)");
 
         channel.sendMessage(embed).join();
     }
+
 }

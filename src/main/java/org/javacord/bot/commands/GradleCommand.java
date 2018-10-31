@@ -11,21 +11,28 @@ import org.javacord.bot.Constants;
  */
 public class GradleCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !gradle} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!gradle"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Dependency",
-                          "```groovy\n" +
-                          "repositories { \n" +
-                          "  mavenCentral()\n" +
-                          "}\n" +
-                          "dependencies { \n" +
-                          "  implementation 'org.javacord:javacord:3.0.0'\n" + // TODO Always use the latest version
-                          "}\n" +
-                          "```")
+                        "```groovy\n"
+                                + "repositories { \n"
+                                + "  mavenCentral()\n"
+                                + "}\n"
+                                + "dependencies { \n"
+                                // TODO Always use the latest version
+                                + "  implementation 'org.javacord:javacord:3.0.0'\n"
+                                + "}\n"
+                                + "```")
                 .addField("Setup Guide", "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-gradle/)");
 
         channel.sendMessage(embed).join();
     }
+
 }

@@ -11,6 +11,11 @@ import org.javacord.bot.Constants;
  */
 public class InviteCommand implements CommandExecutor {
 
+    /**
+     * Executes the {@code !invite} command.
+     *
+     * @param channel The channel where the command was issued.
+     */
     @Command(aliases = {"!invite"}, async = true)
     public void onCommand(TextChannel channel) {
         EmbedBuilder embed = new EmbedBuilder()
@@ -20,4 +25,5 @@ public class InviteCommand implements CommandExecutor {
 
         channel.sendMessage(embed).join();
     }
+
 }
