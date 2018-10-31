@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration name="Javacord Bot" status="INFO" monitorInterval="5" strict="true">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        <Console name="Console Appender">
+            <PatternLayout disableAnsi="false">
+                <Pattern><![CDATA[%highlight{%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m}%n]]></Pattern>
+            </PatternLayout>
         </Console>
+        <File name="File Appender" fileName="log/javacord-bot.log" createOnDemand="true">
+            <PatternLayout>
+                <Pattern><![CDATA[%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m%n]]></Pattern>
+            </PatternLayout>
+        </File>
     </Appenders>
     <Loggers>
-        <Root level="debug">
-            <AppenderRef ref="Console"/>
+        <Root level="DEBUG">
+            <AppenderRef ref="Console Appender"/>
+            <!--<AppenderRef ref="File Appender"/>-->
         </Root>
     </Loggers>
 </Configuration>

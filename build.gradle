@@ -51,3 +51,19 @@ checkstyle {
     toolVersion versions.checkstyle
     maxWarnings 0
 }
+
+applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=%APP_HOME%/config/log4j2.xml']
+startScripts.doLast {
+    unixScript.text = unixScript.text.replace('%APP_HOME%', '$APP_HOME')
+    windowsScript.text = windowsScript.text.replace('%%APP_HOME%%', '%APP_HOME%')
+}
+
+distributions {
+    main {
+        contents {
+            from ('src/main/resources/log4j2.xml') {
+                into 'config'
+            }
+        }
+    }
+}

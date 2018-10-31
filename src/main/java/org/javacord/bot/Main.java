@@ -28,9 +28,17 @@ public class Main {
      *
      * @param args The bot requires exactly one argument, either a file with the token as content or the token directly.
      *             If the argument is a relative file path, it is relative to the working directory.
-     * @throws IOException If there is an error when reading the token file.
+     * @throws IOException If there is an error when reading the token file or writing the default log4j2.xml.
      */
     public static void main(String[] args) throws IOException {
+        String log4jConfigurationFileProperty = System.getProperty("log4j.configurationFile");
+        if (log4jConfigurationFileProperty != null) {
+            Path log4jConfigurationFile = Paths.get(log4jConfigurationFileProperty);
+            if (!Files.exists(log4jConfigurationFile)) {
+                Files.copy(Main.class.getResourceAsStream("/log4j2.xml"), log4jConfigurationFile);
+            }
+        }
+
         Thread.setDefaultUncaughtExceptionHandler(ExceptionLogger.getUncaughtExceptionHandler());
 
         if (args.length != 1) {
