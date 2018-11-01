@@ -81,21 +81,21 @@ public class WikiCommand implements CommandExecutor {
     }
 
     private Predicate<WikiPage> fullSearch(String searchString) {
-        return titleOnly(searchString).or(keywordsOnly(searchString)).or(contentOnly(searchString));
+        return defaultSearch(searchString).or(contentOnly(searchString));
     }
 
     private Predicate<WikiPage> titleOnly(String searchString) {
-        return p -> p.getTitle().toLowerCase().contains(searchString);
+        return page -> page.getTitle().toLowerCase().contains(searchString);
     }
 
     private Predicate<WikiPage> keywordsOnly(String searchString) {
-        return p -> Arrays.stream(p.getKeywords())
+        return page -> Arrays.stream(page.getKeywords())
                 .map(String::toLowerCase)
-                .anyMatch(k -> k.contains(searchString));
+                .anyMatch(keyword -> keyword.contains(searchString));
     }
 
     private Predicate<WikiPage> contentOnly(String searchString) {
-        return p -> p.getContent().toLowerCase().contains(searchString);
+        return page -> page.getContent().toLowerCase().contains(searchString);
     }
 
 
