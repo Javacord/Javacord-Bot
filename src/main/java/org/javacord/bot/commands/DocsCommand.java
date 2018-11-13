@@ -2,6 +2,8 @@ package org.javacord.bot.commands;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import me.xdrop.fuzzywuzzy.model.BoundExtractedResult;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -72,10 +74,11 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString) {
-        Map<String, List<JavadocMethod>> methods = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
-                .getMethods().join().stream()
-                .filter(method -> method.getFullName().toLowerCase().contains(searchString.toLowerCase()))
-                .sorted(Comparator.comparingInt(method -> method.getName().length()))
+        Map<String, List<JavadocMethod>> methods = FuzzySearch.extractTop(searchString,
+                new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
+                        .getMethods().join(), JavadocMethod::getName, 15, 50)
+                .stream()
+                .map(BoundExtractedResult::getReferent)
                 .collect(Collectors.groupingBy(JavadocMethod::getClassName));
 
 
@@ -124,10 +127,11 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateClasses(DiscordApi api, EmbedBuilder embed, String searchString) {
-        List<JavadocClass> classes = new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
-                .getClasses().join().stream()
-                .filter(clazz -> clazz.getName().toLowerCase().contains(searchString.toLowerCase()))
-                .sorted(Comparator.comparingInt(clazz -> clazz.getName().length()))
+        List<JavadocClass> classes = FuzzySearch.extractTop(searchString,
+                new JavadocParser(api, JavadocParser.getLatestJavaDocs(api).join())
+                        .getClasses().join(), JavadocClass::getName, 5, 50)
+                .stream()
+                .map(BoundExtractedResult::getReferent)
                 .collect(Collectors.toList());
 
         embed.setTitle("Classes");
