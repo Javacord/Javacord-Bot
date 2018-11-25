@@ -68,10 +68,12 @@ checkstyle {
     maxWarnings 0
 }
 
-applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=%APP_HOME%/config/log4j2.xml']
-startScripts.doLast {
-    unixScript.text = unixScript.text.replace('%APP_HOME%', '$APP_HOME')
-    windowsScript.text = windowsScript.text.replace('%%APP_HOME%%', '%APP_HOME%')
+startScripts {
+    defaultJvmOpts = ['-Dlog4j.configurationFile=%APP_HOME%/config/log4j2.xml']
+    doLast {
+        unixScript.text = unixScript.text.replace('%APP_HOME%', '$APP_HOME')
+        windowsScript.text = windowsScript.text.replace('%%APP_HOME%%', '%APP_HOME%')
+    }
 }
 
 distributions {
