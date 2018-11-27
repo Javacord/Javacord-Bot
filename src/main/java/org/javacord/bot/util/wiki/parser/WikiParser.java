@@ -75,28 +75,26 @@ public class WikiParser {
                 .build();
 
         Response response = client.newCall(request).execute();
-        ResponseBody body = response.body();
-        Set<WikiPage> pages = new HashSet<>();
-        if (body == null) {
-            return pages;
-        }
-        JsonNode array = mapper.readTree(body.charStream());
-        if (!array.isArray()) {
-            throw new AssertionError("Format of wiki page list not as expected");
-        }
-        for (JsonNode node : array) {
-            if (node.has("title") && node.has("keywords") && node.has("url") && node.has("content")) {
-                pages.add(new WikiPage(
-                        node.get("title").asText(),
-                        asStringArray(node.get("keywords")),
-                        node.get("url").asText(),
-                        node.get("content").asText()
-                ));
-            } else {
+        try (ResponseBody body = response.body()) {
+            Set<WikiPage> pages = new HashSet<>();
+            JsonNode array = mapper.readTree(body.charStream());
+            if (!array.isArray()) {
                 throw new AssertionError("Format of wiki page list not as expected");
             }
+            for (JsonNode node : array) {
+                if (node.has("title") && node.has("keywords") && node.has("url") && node.has("content")) {
+                    pages.add(new WikiPage(
+                            node.get("title").asText(),
+                            asStringArray(node.get("keywords")),
+                            node.get("url").asText(),
+                            node.get("content").asText()
+                    ));
+                } else {
+                    throw new AssertionError("Format of wiki page list not as expected");
+                }
+            }
+            return pages;
         }
-        return pages;
     }
 
     private String[] asStringArray(JsonNode arrayNode) {

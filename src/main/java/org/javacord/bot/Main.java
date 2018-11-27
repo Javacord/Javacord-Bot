@@ -16,7 +16,9 @@ import org.javacord.bot.commands.Sdcf4jCommand;
 import org.javacord.bot.commands.SetupCommand;
 import org.javacord.bot.commands.WikiCommand;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +47,9 @@ public class Main {
         // Token
         Path tokenFile = Paths.get(args[0]);
         if (Files.isRegularFile(tokenFile)) {
-            apiBuilder.setToken(Files.newBufferedReader(tokenFile).readLine());
+            try (BufferedReader tokenFileReader = Files.newBufferedReader(tokenFile)) {
+                apiBuilder.setToken(tokenFileReader.readLine());
+            }
         } else {
             apiBuilder.setToken(args[0]);
         }
@@ -76,7 +80,9 @@ public class Main {
         if (log4jConfigurationFileProperty != null) {
             Path log4jConfigurationFile = Paths.get(log4jConfigurationFileProperty);
             if (!Files.exists(log4jConfigurationFile)) {
-                Files.copy(Main.class.getResourceAsStream("/log4j2.xml"), log4jConfigurationFile);
+                try (InputStream fallbackLog4j2ConfigStream = Main.class.getResourceAsStream("/log4j2.xml")) {
+                    Files.copy(fallbackLog4j2ConfigStream, log4jConfigurationFile);
+                }
             }
         }
 

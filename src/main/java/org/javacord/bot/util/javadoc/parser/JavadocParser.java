@@ -49,8 +49,9 @@ public class JavadocParser {
                         .url("https://docs.javacord.org/api/")
                         .build();
 
-                Response response = client.newCall(request).execute();
-                return response.request().url().toString();
+                try (Response response = client.newCall(request).execute()) {
+                    return response.request().url().toString();
+                }
             } catch (Exception e) {
                 throw new CompletionException(e);
             }
@@ -99,15 +100,13 @@ public class JavadocParser {
                 .build();
 
         Response response = client.newCall(request).execute();
-        ResponseBody body = response.body();
-        Set<JavadocMethod> methods = new HashSet<>();
-        if (body == null) {
+        try (ResponseBody body = response.body()) {
+            Set<JavadocMethod> methods = new HashSet<>();
+            for (JsonNode node : mapper.readTree(body.string().replaceFirst("memberSearchIndex = ", ""))) {
+                methods.add(new JavadocMethod(url, node));
+            }
             return methods;
         }
-        for (JsonNode node : mapper.readTree(body.string().replaceFirst("memberSearchIndex = ", ""))) {
-            methods.add(new JavadocMethod(url, node));
-        }
-        return methods;
     }
 
     /**
@@ -122,15 +121,13 @@ public class JavadocParser {
                 .build();
 
         Response response = client.newCall(request).execute();
-        ResponseBody body = response.body();
-        Set<JavadocClass> classes = new HashSet<>();
-        if (body == null) {
+        try (ResponseBody body = response.body()) {
+            Set<JavadocClass> classes = new HashSet<>();
+            for (JsonNode node : mapper.readTree(body.string().replaceFirst("typeSearchIndex = ", ""))) {
+                classes.add(new JavadocClass(url, node));
+            }
             return classes;
         }
-        for (JsonNode node : mapper.readTree(body.string().replaceFirst("typeSearchIndex = ", ""))) {
-            classes.add(new JavadocClass(url, node));
-        }
-        return classes;
     }
 
 }

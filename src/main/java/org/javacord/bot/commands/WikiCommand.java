@@ -11,6 +11,7 @@ import org.javacord.bot.util.wiki.parser.WikiPage;
 import org.javacord.bot.util.wiki.parser.WikiParser;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -34,20 +35,16 @@ public class WikiCommand implements CommandExecutor {
      */
     @Command(aliases = {"!wiki"}, async = true)
     public void onCommand(DiscordApi api, TextChannel channel, String[] args) throws IOException {
-        try {
+        try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
+                    .setColor(Constants.JAVACORD_ORANGE);
             if (args.length == 0) { // Just an overview
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setTitle("Javacord Wiki")
+                embed.setTitle("Javacord Wiki")
                         .setDescription("The [Javacord Wiki](" + WikiParser.BASE_URL + "/wiki) is an excellent "
                                 + "resource to get you started with Javacord.\n")
-                        .addInlineField("Hint", "You can search the wiki using `!wiki [title|full] <search>")
-                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                        .setColor(Constants.JAVACORD_ORANGE);
-                channel.sendMessage(embed).join();
+                        .addInlineField("Hint", "You can search the wiki using `!wiki [title|full] <search>");
             } else {
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                        .setColor(Constants.JAVACORD_ORANGE);
                 String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length)).toLowerCase();
                 switch (args[0]) {
                     case "page":
@@ -66,8 +63,8 @@ public class WikiCommand implements CommandExecutor {
                         searchString = String.join(" ", Arrays.copyOfRange(args, 0, args.length)).toLowerCase();
                         populatePages(api, embed, defaultSearch(searchString));
                 }
-                channel.sendMessage(embed).join();
             }
+            channel.sendMessage(embed).join();
         } catch (Throwable t) {
             channel.sendMessage("Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```")
                     .join();

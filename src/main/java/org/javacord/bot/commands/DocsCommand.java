@@ -11,6 +11,8 @@ import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -27,23 +29,20 @@ public class DocsCommand implements CommandExecutor {
      *
      * @param channel The channel where the command was issued.
      * @param args    The arguments given to the command.
+     * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
     @Command(aliases = {"!docs"}, async = true)
-    public void onCommand(TextChannel channel, String[] args) {
-        try {
+    public void onCommand(TextChannel channel, String[] args) throws IOException {
+        try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setThumbnail(javacord3Icon, "png")
+                    .setColor(Constants.JAVACORD_ORANGE);
             if (args.length == 0) { // Just give an overview
-                EmbedBuilder embed = new EmbedBuilder()
-                        .addField("Overview", "https://docs.javacord.org/")
+                embed.addField("Overview", "https://docs.javacord.org/")
                         .addField("Latest release version", "https://docs.javacord.org/api/v/latest")
                         .addField("Latest snapshot", "https://docs.javacord.org/api/build/latest")
-                        .addField("Hint", "You can search the docs using `!docs [method|class] <search>`")
-                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                        .setColor(Constants.JAVACORD_ORANGE);
-                channel.sendMessage(embed).join();
+                        .addField("Hint", "You can search the docs using `!docs [method|class] <search>`");
             } else { // Search
-                EmbedBuilder embed = new EmbedBuilder()
-                        .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                        .setColor(Constants.JAVACORD_ORANGE);
                 if (args[0].matches("(classes|class|c)")) { // Search for a class
                     String searchString = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
                     populateClasses(channel.getApi(), embed, searchString);
@@ -54,8 +53,8 @@ public class DocsCommand implements CommandExecutor {
                     String searchString = String.join(" ", args);
                     populateMethods(channel.getApi(), embed, searchString);
                 }
-                channel.sendMessage(embed).join();
             }
+            channel.sendMessage(embed).join();
         } catch (Throwable t) {
             channel.sendMessage(
                     "Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```").join();
