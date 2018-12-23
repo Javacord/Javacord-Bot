@@ -128,10 +128,12 @@ public class DocsCommand implements CommandExecutor {
 
         int totalTextCount = 25; // the maximum tracker string length
         List<Map.Entry<String, List<JavadocMethod>>> entries = new ArrayList<>(methodsByClass.entrySet());
+        entries.sort(Comparator.comparing(Map.Entry::getKey, String::compareToIgnoreCase));
         int classesAmount = entries.size();
         for (int classIndex = 0; classIndex < classesAmount; classIndex++) {
             Map.Entry<String, List<JavadocMethod>> entry = entries.get(classIndex);
             List<JavadocMethod> methods = entry.getValue();
+            methods.sort(Comparator.comparing(JavadocMethod::getShortenedName, String::compareToIgnoreCase));
             StringBuilder methodsBuilder = new StringBuilder();
             int methodsAmount = methods.size();
             for (int methodIndex = 0; methodIndex < methodsAmount; methodIndex++) {
