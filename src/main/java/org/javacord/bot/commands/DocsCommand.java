@@ -15,6 +15,7 @@ import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ public class DocsCommand implements CommandExecutor {
      * The parameters that indicate also searching internal packages and the core docs.
      */
     private static final Set<String> includeAllParams = new HashSet<>(Arrays.asList("all", "a"));
-    
+
     /**
      * Executes the {@code !docs} command.
      *
@@ -108,7 +109,8 @@ public class DocsCommand implements CommandExecutor {
                 .thenCompose(JavadocParser::getMethods)
                 : CompletableFuture.completedFuture(Collections.emptySet());
 
-        Map<String, List<JavadocMethod>> methods = apiMethods.thenCombine(coreMethods, this::unionOf).join().stream()
+        Map<String, List<JavadocMethod>> methodsByClass = apiMethods
+                .thenCombine(coreMethods, this::unionOf).join().stream()
                 .filter(method -> method.getFullName().toLowerCase().contains(searchString.toLowerCase()))
                 .filter(method -> {
                     String packageName = method.getPackageName();
@@ -118,40 +120,50 @@ public class DocsCommand implements CommandExecutor {
                 .collect(Collectors.groupingBy(JavadocMethod::getClassName));
 
 
-        if (methods.isEmpty()) {
+        if (methodsByClass.isEmpty()) {
             embed.setTitle("Methods");
             embed.setDescription("No matching methods found!");
             return;
         }
 
-        int totalTextCount = 0;
-        int classCounter = 0;
-        for (Map.Entry<String, List<JavadocMethod>> entry : methods.entrySet()) {
-            StringBuilder strBuilder = new StringBuilder();
-            int methodCounter = 0;
-            for (JavadocMethod method : entry.getValue()) {
-                if (strBuilder.length() > 800) { // To prevent hitting the maximum field size
-                    strBuilder.append("• ").append(entry.getValue().size() - methodCounter).append(" more ...");
-                    break;
-                }
-                strBuilder.append("• [")
+        int totalTextCount = 25; // the maximum tracker string length
+        List<Map.Entry<String, List<JavadocMethod>>> entries = new ArrayList<>(methodsByClass.entrySet());
+        int classesAmount = entries.size();
+        for (int classIndex = 0; classIndex < classesAmount; classIndex++) {
+            Map.Entry<String, List<JavadocMethod>> entry = entries.get(classIndex);
+            List<JavadocMethod> methods = entry.getValue();
+            StringBuilder methodsBuilder = new StringBuilder();
+            int methodsAmount = methods.size();
+            for (int methodIndex = 0; methodIndex < methodsAmount; methodIndex++) {
+                JavadocMethod method = methods.get(methodIndex);
+                StringBuilder methodBuilder = new StringBuilder()
+                        .append("• [")
                         .append(method.getShortenedName())
                         .append("](")
                         .append(method.getFullUrl())
                         .append(")\n");
-                methodCounter++;
+                int nextMoreSize = methodIndex == (methodsAmount - 1)
+                        ? 0
+                        : 11 + (int) (Math.log10(methodsAmount - methodIndex - 1) + 1);
+                if ((methodsBuilder.length() + methodBuilder.length() + nextMoreSize) <= 1024) {
+                    methodsBuilder.append(methodBuilder);
+                } else {
+                    methodsBuilder.append("• ").append(methodsAmount - methodIndex).append(" more ...");
+                    break;
+                }
             }
-            embed.addField(entry.getKey(), strBuilder.toString());
-            totalTextCount += entry.getKey().length() + strBuilder.length();
-            classCounter++;
-            if (totalTextCount > 5000) { // To prevent hitting the maximum embed size
+            int nextMoreSize = classIndex == (classesAmount - 1)
+                    ? 0
+                    : 57 + (int) (Math.log10(classesAmount - classIndex - 1) + 1);
+            String className = entry.getKey();
+            if ((totalTextCount + className.length() + methodsBuilder.length() + nextMoreSize) <= 6000) {
+                embed.addField(className, methodsBuilder.toString());
+                totalTextCount += className.length() + methodsBuilder.length();
+            } else {
+                embed.addField(String.format("And **%d** more classes ...", classesAmount - classIndex),
+                        "Maybe try a less generic search?");
                 break;
             }
-        }
-
-        if (methods.size() - classCounter > 0) {
-            embed.addField("And **" + (methods.size() - classCounter) + "** more classes ...",
-                    "Maybe try a less generic search?");
         }
     }
 
