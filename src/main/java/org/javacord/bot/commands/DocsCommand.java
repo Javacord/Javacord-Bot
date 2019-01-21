@@ -6,6 +6,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
@@ -49,13 +50,19 @@ public class DocsCommand implements CommandExecutor {
     /**
      * Executes the {@code !docs} command.
      *
+     * @param server  The server where the command was issued.
      * @param channel The channel where the command was issued.
      * @param message The message the command was issued in.
      * @param args    The arguments given to the command.
      * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
     @Command(aliases = {"!docs"}, async = true)
-    public void onCommand(TextChannel channel, Message message, String[] args) throws IOException {
+    public void onCommand(Server server, TextChannel channel, Message message, String[] args) throws IOException {
+        // Only react in #java_javacord channel on Discord API server
+        if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
+            return;
+        }
+
         try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon, "png")
