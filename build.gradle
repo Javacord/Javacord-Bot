@@ -33,7 +33,7 @@ repositories {
 ext {
     versions = [
             checkstyle: '8.14',
-            javacord  : '3.0.1',
+            javacord  : '3.0.2',
             sdcf4j    : 'v1.0.10',
             okhttp    : '3.9.1',
             jackson   : '2.9.3',
