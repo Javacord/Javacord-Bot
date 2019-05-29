@@ -8,11 +8,22 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.util.LatestVersionFinder;
 
 /**
  * The !setup command which is used to get information useful for first setup.
  */
 public class SetupCommand implements CommandExecutor {
+
+    private final LatestVersionFinder versionFinder;
+
+    /**
+     * Initializes the Command.
+     * @param versionFinder The version finder to use to determine the latest javacord version.
+     */
+    public SetupCommand(LatestVersionFinder versionFinder) {
+        this.versionFinder = versionFinder;
+    }
 
     /**
      * Executes the {@code !setup} command.
@@ -27,7 +38,7 @@ public class SetupCommand implements CommandExecutor {
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
             return;
         }
-
+        String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Gradle Dependency",
@@ -36,8 +47,7 @@ public class SetupCommand implements CommandExecutor {
                                 + "  mavenCentral()\n"
                                 + "}\n"
                                 + "dependencies { \n"
-                                // TODO Always use the latest version
-                                + "  implementation 'org.javacord:javacord:3.0.0'\n"
+                                + "  implementation 'org.javacord:javacord:" + latestVersion + "'\n"
                                 + "}\n"
                                 + "```")
                 .addField("Maven Dependency",
@@ -45,8 +55,7 @@ public class SetupCommand implements CommandExecutor {
                                 + "<dependency>\n"
                                 + "    <groupId>org.javacord</groupId>\n"
                                 + "    <artifactId>javacord</artifactId>\n"
-                                // TODO Always use the latest version
-                                + "    <version>3.0.0</version>\n"
+                                + "    <version>" + latestVersion + "</version>\n"
                                 + "    <type>pom</type>\n"
                                 + "</dependency>\n"
                                 + "```")

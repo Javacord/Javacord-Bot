@@ -16,6 +16,7 @@ import org.javacord.bot.commands.Sdcf4jCommand;
 import org.javacord.bot.commands.SetupCommand;
 import org.javacord.bot.commands.WikiCommand;
 import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.util.LatestVersionFinder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,15 +61,18 @@ public class Main {
                 .setWaitForServersOnStartup(false)
                 .login().join();
 
+        // Tool for finding the latest version.
+        LatestVersionFinder versionFinder = new LatestVersionFinder(api);
+
         // Register commands
         CommandHandler handler = new JavacordHandler(api);
         handler.registerCommand(new DocsCommand());
         handler.registerCommand(new ExampleCommand());
         handler.registerCommand(new GitHubCommand());
-        handler.registerCommand(new GradleCommand());
+        handler.registerCommand(new GradleCommand(versionFinder));
         handler.registerCommand(new InviteCommand());
-        handler.registerCommand(new MavenCommand());
-        handler.registerCommand(new SetupCommand());
+        handler.registerCommand(new MavenCommand(versionFinder));
+        handler.registerCommand(new SetupCommand(versionFinder));
         handler.registerCommand(new WikiCommand());
         handler.registerCommand(new Sdcf4jCommand());
         handler.registerCommand(new InfoCommand());

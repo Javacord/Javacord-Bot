@@ -22,6 +22,11 @@ public final class Constants {
      */
     public static final long DAPI_JAVACORD_CHANNEL_ID = 381889796785831936L;
 
+    /**
+     * The API URL where to obtain the latest release version for Javacord.
+     */
+    public static final String LATEST_VERSION_URL = "https://docs.javacord.org/rest/latest-version/release";
+
     private Constants() { /* nope */ }
 
 }
