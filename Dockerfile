@@ -16,8 +16,11 @@ WORKDIR /opt/javacord-bot/
 
 RUN mkdir log && \
     sed -i \
-    -e 's|<Root level="DEBUG">|<Root level="INFO">|' \
-    -e 's|<!--<AppenderRef ref="File Appender"/>-->|<AppenderRef ref="File Appender"/>|' \
+    -e 's|level="DEBUG"|level="INFO"|' \
+    -e 's|<!--<AppenderRef ref="File Appender" level="INFO"/>-->|<AppenderRef ref="File Appender" level="INFO"/>|' \
+    -e 's|<!--<AppenderRef ref="ALL File Appender"/>-->|<AppenderRef ref="ALL File Appender"/>|' \
+    -e 's|<!--<RollingRandomAccessFile|<RollingRandomAccessFile|' \
+    -e 's|</RollingRandomAccessFile>-->|</RollingRandomAccessFile>|' \
     config/log4j2.xml
 
 VOLUME /opt/javacord-bot/log/

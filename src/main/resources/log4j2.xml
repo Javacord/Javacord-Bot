@@ -11,11 +11,19 @@
                 <Pattern><![CDATA[%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m%n]]></Pattern>
             </PatternLayout>
         </File>
+        <!--<RollingRandomAccessFile name="ALL File Appender" fileName="log/javacord-bot-ALL.log" filePattern="log/javacord-bot-TRACE-%i.log.gz">
+            <PatternLayout>
+                <Pattern><![CDATA[%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m%n]]></Pattern>
+            </PatternLayout>
+            <SizeBasedTriggeringPolicy size="100 MB"/>
+            <DefaultRolloverStrategy fileIndex="min" max="10"/>
+        </RollingRandomAccessFile>-->
     </Appenders>
     <Loggers>
-        <Root level="DEBUG">
-            <AppenderRef ref="Console Appender"/>
-            <!--<AppenderRef ref="File Appender"/>-->
+        <Root level="ALL">
+            <AppenderRef ref="Console Appender" level="DEBUG"/>
+            <!--<AppenderRef ref="File Appender" level="DEBUG"/>-->
+            <!--<AppenderRef ref="ALL File Appender"/>-->
         </Root>
     </Loggers>
 </Configuration>
