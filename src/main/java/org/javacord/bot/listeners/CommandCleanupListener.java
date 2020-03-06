@@ -7,6 +7,7 @@ import org.javacord.api.entity.message.embed.EmbedFooter;
 import org.javacord.api.event.message.MessageDeleteEvent;
 import org.javacord.api.listener.message.MessageDeleteListener;
 
+import java.util.Optional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
