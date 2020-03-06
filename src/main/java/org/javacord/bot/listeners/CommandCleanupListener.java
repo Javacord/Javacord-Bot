@@ -7,7 +7,6 @@ import org.javacord.api.entity.message.embed.EmbedFooter;
 import org.javacord.api.event.message.MessageDeleteEvent;
 import org.javacord.api.listener.message.MessageDeleteListener;
 
-import java.util.Optional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
@@ -47,14 +46,14 @@ public class CommandCleanupListener implements MessageDeleteListener {
         return message -> message.getCreationTimestamp().isAfter(instant);
     }
 
-    private Predicate<Message> isOurResponseTo(long messageId) {
+  private Predicate<Message> isOurResponseTo(long messageId) {
         String tracker = longToBinaryBlankString(messageId);
         return message -> !message.getEmbeds().isEmpty()
                 && message.getAuthor().isYourself()
                 && message.getEmbeds().get(0).getFooter()
                 .flatMap(EmbedFooter::getText)
-                .flatMap(text -> Optional.of(text.startsWith(tracker)))
-                .orElse(false);
+                .filter(text -> text.startsWith(tracker))
+                .isPresent();
     }
     
     private static String longToBinaryBlankString(long l)  {
