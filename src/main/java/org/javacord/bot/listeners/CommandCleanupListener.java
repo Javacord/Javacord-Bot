@@ -24,7 +24,11 @@ public class CommandCleanupListener implements MessageDeleteListener {
      * @return The embed builder for call chaining.
      */
     public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId) {
-        return builder.setFooter("re: " + trackedMessageId);
+        return  insertResponseTracker(builder, trackedMessageId, "If you delete your invocation message, this will be deleted. 🥄");
+    }
+    
+    public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId, String footerContent) {
+        return builder.setFooter(longToBinaryBlankString(trackedMessageId) + footerContent);
     }
 
     @Override
@@ -43,14 +47,16 @@ public class CommandCleanupListener implements MessageDeleteListener {
     }
 
     private Predicate<Message> isOurResponseTo(long messageId) {
-        String tracker = "re: " + messageId;
+        String tracker = longToBinaryBlankString(messageId);
         return message -> !message.getEmbeds().isEmpty()
                 && message.getAuthor().isYourself()
                 && message.getEmbeds().get(0).getFooter()
                 .flatMap(EmbedFooter::getText)
-                .map(tracker::equals)
+                .flatMap(text -> Optional.of(text.startsWith(tracker)))
                 .orElse(false);
     }
-
-
+    
+    private static String longToBinaryBlankString(long l)  {
+        return Long.toBinaryString(l).replace('0', '\u200B').replace('1', '\u200D');
+    }
 }
