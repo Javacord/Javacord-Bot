@@ -26,7 +26,15 @@ public class CommandCleanupListener implements MessageDeleteListener {
     public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId) {
         return  insertResponseTracker(builder, trackedMessageId, "If you delete your invocation message, this will be deleted. 🥄");
     }
-    
+
+    /**
+     * Inserts a tracking footer into an embed builder.
+     *
+     * @param builder          The embed builder to change.
+     * @param trackedMessageId The id of the message to track.
+     * @param footerContent The content the Footer should display.
+     * @return The embed builder for call chaining.
+     */
     public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId, String footerContent) {
         return builder.setFooter(longToBinaryBlankString(trackedMessageId) + footerContent);
     }
@@ -46,7 +54,7 @@ public class CommandCleanupListener implements MessageDeleteListener {
         return message -> message.getCreationTimestamp().isAfter(instant);
     }
 
-  private Predicate<Message> isOurResponseTo(long messageId) {
+    private Predicate<Message> isOurResponseTo(long messageId) {
         String tracker = longToBinaryBlankString(messageId);
         return message -> !message.getEmbeds().isEmpty()
                 && message.getAuthor().isYourself()
@@ -55,8 +63,10 @@ public class CommandCleanupListener implements MessageDeleteListener {
                 .filter(text -> text.startsWith(tracker))
                 .isPresent();
     }
-    
+
     private static String longToBinaryBlankString(long l)  {
-        return Long.toBinaryString(l).replace('0', '\u200B').replace('1', '\u200D');
+        return Long.toBinaryString(l)
+                .replace('0', '\u200B')
+                .replace('1', '\u200D');
     }
 }
