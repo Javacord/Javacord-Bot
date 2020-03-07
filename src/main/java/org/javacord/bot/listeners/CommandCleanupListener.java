@@ -24,7 +24,8 @@ public class CommandCleanupListener implements MessageDeleteListener {
      * @return The embed builder for call chaining.
      */
     public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId) {
-        return  insertResponseTracker(builder, trackedMessageId, "If you delete your invocation message, this will be deleted. 🥄");
+        return  insertResponseTracker(builder, trackedMessageId,
+                "If you delete your invocation message, this will be deleted. 🥄");
     }
 
     /**
@@ -35,7 +36,8 @@ public class CommandCleanupListener implements MessageDeleteListener {
      * @param footerContent The content the Footer should display.
      * @return The embed builder for call chaining.
      */
-    public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId, String footerContent) {
+    public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId, 
+                                                     String footerContent) {
         return builder.setFooter(longToBinaryBlankString(trackedMessageId) + footerContent);
     }
 
