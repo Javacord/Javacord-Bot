@@ -56,7 +56,8 @@ public class DocsCommand implements CommandExecutor {
      * @param args    The arguments given to the command.
      * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
-    @Command(aliases = {"!docs"}, async = true)
+    @Command(aliases = {"!docs"}, async = true, usage = "!docs [method|class] <search>",
+            description = "Shows a link to the JavaDoc or searches through it")
     public void onCommand(Server server, TextChannel channel, Message message, String[] args) throws IOException {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {

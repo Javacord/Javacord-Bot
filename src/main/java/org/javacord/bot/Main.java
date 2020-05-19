@@ -9,6 +9,7 @@ import org.javacord.bot.commands.DocsCommand;
 import org.javacord.bot.commands.ExampleCommand;
 import org.javacord.bot.commands.GitHubCommand;
 import org.javacord.bot.commands.GradleCommand;
+import org.javacord.bot.commands.HelpCommand;
 import org.javacord.bot.commands.InfoCommand;
 import org.javacord.bot.commands.InviteCommand;
 import org.javacord.bot.commands.MavenCommand;
@@ -66,16 +67,17 @@ public class Main {
 
         // Register commands
         CommandHandler handler = new JavacordHandler(api);
-        handler.registerCommand(new DocsCommand());
-        handler.registerCommand(new ExampleCommand());
-        handler.registerCommand(new GitHubCommand());
-        handler.registerCommand(new GradleCommand(versionFinder));
-        handler.registerCommand(new InviteCommand());
-        handler.registerCommand(new MavenCommand(versionFinder));
-        handler.registerCommand(new SetupCommand(versionFinder));
-        handler.registerCommand(new WikiCommand());
-        handler.registerCommand(new Sdcf4jCommand());
         handler.registerCommand(new InfoCommand());
+        handler.registerCommand(new WikiCommand());
+        handler.registerCommand(new DocsCommand());
+        handler.registerCommand(new GitHubCommand());
+        handler.registerCommand(new ExampleCommand());
+        handler.registerCommand(new SetupCommand(versionFinder));
+        handler.registerCommand(new GradleCommand(versionFinder));
+        handler.registerCommand(new MavenCommand(versionFinder));
+        handler.registerCommand(new InviteCommand());
+        handler.registerCommand(new Sdcf4jCommand());
+        handler.registerCommand(new HelpCommand(handler));
 
         api.addMessageDeleteListener(new CommandCleanupListener());
     }

@@ -13,6 +13,11 @@ public final class Constants {
     public static final Color JAVACORD_ORANGE = new Color(243, 189, 30);
 
     /**
+     * The color used for error messages.
+     */
+    public static final Color ERROR_COLOR = Color.RED;
+
+    /**
      * The ID of the "Discord API" server.
      */
     public static final long DAPI_SERVER_ID = 81384788765712384L;

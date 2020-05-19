@@ -32,7 +32,7 @@ public class MavenCommand implements CommandExecutor {
      * @param channel The channel where the command was issued.
      * @param message The message the command was issued in.
      */
-    @Command(aliases = {"!maven"}, async = true)
+    @Command(aliases = {"!maven"}, async = true, description = "Shows the Maven dependency")
     public void onCommand(Server server, TextChannel channel, Message message) {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {

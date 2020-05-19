@@ -25,7 +25,7 @@ public class InviteCommand implements CommandExecutor {
      * @param message The message the command was issued in.
      * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
-    @Command(aliases = {"!invite"}, async = true)
+    @Command(aliases = {"!invite"}, async = true, description = "Shows the invite link to the Javacord server")
     public void onCommand(Server server, TextChannel channel, Message message) throws IOException {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {

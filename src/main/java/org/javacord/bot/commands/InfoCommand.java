@@ -20,7 +20,7 @@ public class InfoCommand implements CommandExecutor {
      * @param channel The channel where the command was issued.
      * @param message The message the command was issued in.
      */
-    @Command(aliases = "!info", async = true)
+    @Command(aliases = "!info", async = true, description = "Shows information about this bot")
     public void handleCommand(Server server, TextChannel channel, Message message) {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {

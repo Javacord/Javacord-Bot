@@ -38,7 +38,8 @@ public class WikiCommand implements CommandExecutor {
      * @param args The command's arguments.
      * @throws IOException If the connection to the wiki failed.
      */
-    @Command(aliases = {"!wiki"}, async = true)
+    @Command(aliases = {"!wiki"}, async = true, usage = "!wiki [title|full] <search>",
+            description = "Shows a link to the wiki or searches through it")
     public void onCommand(DiscordApi api, Server server, TextChannel channel, Message message, String[] args)
             throws IOException {
         // Only react in #java_javacord channel on Discord API server

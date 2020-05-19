@@ -32,7 +32,7 @@ public class GradleCommand implements CommandExecutor {
      * @param channel The channel where the command was issued.
      * @param message The message the command was issued in.
      */
-    @Command(aliases = {"!gradle"}, async = true)
+    @Command(aliases = {"!gradle"}, async = true, description = "Shows the Gradle dependency")
     public void onCommand(Server server, TextChannel channel, Message message) {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {

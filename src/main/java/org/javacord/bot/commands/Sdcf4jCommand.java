@@ -18,7 +18,7 @@ public class Sdcf4jCommand implements CommandExecutor {
      * @param channel The channel where the command was issued.
      * @param message The message the command was issued in.
      */
-    @Command(aliases = {"!sdcf4j", "!commands"}, async = true)
+    @Command(aliases = {"!sdcf4j"}, async = true, description = "Shows information about the sdcf4j library")
     public void onCommand(Server server, TextChannel channel, Message message) {
         // Only react in #java_javacord channel on Discord API server
         if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
