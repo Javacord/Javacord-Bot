@@ -17,6 +17,7 @@ import org.javacord.bot.commands.Sdcf4jCommand;
 import org.javacord.bot.commands.SetupCommand;
 import org.javacord.bot.commands.WikiCommand;
 import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TalkToJamesListener;
 import org.javacord.bot.util.LatestVersionFinder;
 
 import java.io.BufferedReader;
@@ -80,6 +81,7 @@ public class Main {
         handler.registerCommand(new HelpCommand(handler));
 
         api.addMessageDeleteListener(new CommandCleanupListener());
+        api.addMessageCreateListener(new TalkToJamesListener(handler));
     }
 
     private static void setupLogging() throws IOException {

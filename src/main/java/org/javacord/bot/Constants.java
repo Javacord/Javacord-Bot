@@ -28,6 +28,11 @@ public final class Constants {
     public static final long DAPI_JAVACORD_CHANNEL_ID = 381889796785831936L;
 
     /**
+     * The ID of the #talk-to-james channel on the Javacord server.
+     */
+    public static final long TALK_TO_JAMES_CHANNEL_ID = 712366253603422209L;
+
+    /**
      * The API URL where to obtain the latest release version for Javacord.
      */
     public static final String LATEST_VERSION_URL = "https://docs.javacord.org/rest/latest-version/release";
