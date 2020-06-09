@@ -7,7 +7,7 @@ public class WikiPage implements Comparable<WikiPage> {
 
     private final String title;
     private final String[] keywords;
-    private final String url;
+    private final String path;
     private final String content;
 
     /**
@@ -15,13 +15,13 @@ public class WikiPage implements Comparable<WikiPage> {
      *
      * @param title The title of the page.
      * @param keywords The keywords the page is tagged with.
-     * @param url The URL of the page, relative to the wiki's base URL.
+     * @param path The path of the page, relative to the wiki's base URL.
      * @param content The content of the page.
      */
-    public WikiPage(String title, String[] keywords, String url, String content) {
+    public WikiPage(String title, String[] keywords, String path, String content) {
         this.title = title;
         this.keywords = keywords;
-        this.url = url;
+        this.path = path;
         this.content = content;
     }
 
@@ -44,12 +44,12 @@ public class WikiPage implements Comparable<WikiPage> {
     }
 
     /**
-     * Gets the relative URL.
+     * Gets the relative path.
      *
-     * @return The page URL.
+     * @return The page path.
      */
-    public String getUrl() {
-        return url;
+    public String getPath() {
+        return path;
     }
 
     /**
@@ -67,7 +67,7 @@ public class WikiPage implements Comparable<WikiPage> {
      * @return The markdown for a link to the page.
      */
     public String asMarkdownLink() {
-        return String.format("[%s](%s)", title, WikiParser.BASE_URL + url);
+        return String.format("[%s](%s)", title, WikiParser.BASE_URL + path);
     }
 
     @Override
