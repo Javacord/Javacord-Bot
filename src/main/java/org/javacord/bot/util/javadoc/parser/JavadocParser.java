@@ -7,6 +7,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.javacord.api.DiscordApi;
+import org.javacord.bot.Constants;
+import org.javacord.bot.util.LatestVersionFinder;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -43,7 +45,7 @@ public class JavadocParser {
      * @return The latest JavaDoc link.
      */
     public static CompletableFuture<String> getLatestJavaDocs(DiscordApi api) {
-        return getJavadocUrl(api, "https://docs.javacord.org/api/");
+        return getJavadocUrl(api, "api");
     }
 
     /**
@@ -53,21 +55,27 @@ public class JavadocParser {
      * @return The latest core JavaDoc link.
      */
     public static CompletableFuture<String> getLatestCoreJavaDocs(DiscordApi api) {
-        return getJavadocUrl(api, "https://docs.javacord.org/core/");
+        return getJavadocUrl(api, "core");
     }
 
-    private static CompletableFuture<String> getJavadocUrl(DiscordApi api, String url) {
+    private static CompletableFuture<String> getJavadocUrl(DiscordApi api, String type) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Request request = new Request.Builder()
-                        .url(url)
+                        .url(String.format(Constants.JAVACORD_DOCS_URL_1, type))
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {
                     return response.request().url().toString();
                 }
             } catch (Exception e) {
-                throw new CompletionException(e);
+                try {
+                    return String.format(Constants.JAVACORD_DOCS_URL_2, type,
+                            new LatestVersionFinder(api).findLatestVersion().join());
+                } catch (Exception ignored) {
+                    //Just handle first exception, because it is more important.
+                    throw new CompletionException(e);
+                }
             }
         }, api.getThreadPool().getExecutorService());
     }

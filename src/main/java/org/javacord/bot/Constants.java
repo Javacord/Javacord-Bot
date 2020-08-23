@@ -35,7 +35,17 @@ public final class Constants {
     /**
      * The API URL where to obtain the latest release version for Javacord.
      */
-    public static final String LATEST_VERSION_URL = "https://docs.javacord.org/rest/latest-version/release";
+    public static final String LATEST_VERSION_URL = "https://ci.javacord.org/app/rest/builds/buildType:(id:Javacord_Release),status:SUCCESS?guest=1";
+
+    /**
+     * The URL to the Javacord docs on docs.javacord.org, with a placeholder for api/core.
+     */
+    public static final String JAVACORD_DOCS_URL_1 = "https://docs.javacord.org/%s/";
+
+    /**
+     * The URL to the Javacord docs on javadoc.io, with a placeholder for api/core and another for the version.
+     */
+    public static final String JAVACORD_DOCS_URL_2 = "https://javadoc.io/static/org.javacord/javacord-%s/%s/";
 
     private Constants() { /* nope */ }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Request.Builder;
 import okhttp3.ResponseBody;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -49,25 +50,30 @@ public class LatestVersionFinder {
     private String getAndUpdateVersionSync() {
         Request request = new Request.Builder()
                 .url(Constants.LATEST_VERSION_URL)
+                .header("Accept", "application/json")
                 .build();
+
         try (ResponseBody body = client.newCall(request).execute().body()) {
             if (body == null) {
                 throw new RuntimeException("Error while requesting the latest version: No response body.");
             }
+
             JsonNode response = mapper.readTree(body.charStream());
-            // Response format is a JSON object {"version":"x.y.z"}
+
+            // Response format is a JSON object {"number":"x.y.z (#n)", ...}
             if (!response.isObject()) {
                 throw new AssertionError("Latest Version API result differs from expectation");
             }
-            String latestVersion = response.get("version").asText();
-            if (latestVersion == null || latestVersion.isEmpty()) {
+
+            String latestVersion = response.get("number").asText();
+            if (latestVersion == null || latestVersion.isEmpty() || !latestVersion.contains(" ")) {
                 throw new AssertionError("Latest Version API result differs from expectation");
             }
-            // Set cached version
-            this.latestVersion = latestVersion;
+
+            this.latestVersion = latestVersion.split(" ", 2)[0]; //converts "x.y.z (#n)" to "x.y.z"
             // Eventually clean up update task
             return latestVersion;
-        } catch (NullPointerException | IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error while requesting the latest version", e);
         }
     }
