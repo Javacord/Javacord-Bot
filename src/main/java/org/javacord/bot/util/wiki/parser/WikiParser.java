@@ -19,7 +19,7 @@ import java.util.concurrent.CompletionException;
  */
 public class WikiParser {
 
-    public static final String API_URL = "https://javacord.org/api/wiki.json";
+    public static final String API_URL = "https://javacord.org/bot-search-index.json";
     public static final String BASE_URL = "https://javacord.org"; // the /wiki/ part of the url will be returned by the API
 
     private static final OkHttpClient client = new OkHttpClient();
@@ -82,11 +82,11 @@ public class WikiParser {
                 throw new AssertionError("Format of wiki page list not as expected");
             }
             for (JsonNode node : array) {
-                if (node.has("title") && node.has("keywords") && node.has("url") && node.has("content")) {
+                if (node.has("title") && node.has("keywords") && node.has("path") && node.has("content")) {
                     pages.add(new WikiPage(
                             node.get("title").asText(),
                             asStringArray(node.get("keywords")),
-                            node.get("url").asText(),
+                            node.get("path").asText(),
                             node.get("content").asText()
                     ));
                 } else {

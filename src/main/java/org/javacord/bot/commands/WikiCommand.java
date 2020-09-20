@@ -145,10 +145,14 @@ public class WikiCommand implements CommandExecutor {
             sentences++;
         }
         StringBuilder description = new StringBuilder()
-                .append(String.format("**[%s](%s)**\n\n", page.getTitle(), WikiParser.BASE_URL + page.getUrl()))
+                .append(String.format("**[%s](%s)**\n\n", page.getTitle(), WikiParser.BASE_URL + page.getPath()))
                 .append(cleanedDescription, 0, length + 1);
         if (length < cleanedDescription.length()) {
-            description.append("\n\n[*view full page*](").append(WikiParser.BASE_URL).append(page.getUrl()).append(")");
+            description
+                    .append("\n\n[*view full page*](")
+                    .append(WikiParser.BASE_URL)
+                    .append(page.getPath())
+                    .append(")");
         }
         embed.setDescription(description.toString());
     }
