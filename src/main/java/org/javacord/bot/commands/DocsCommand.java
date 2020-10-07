@@ -136,7 +136,7 @@ public class DocsCommand implements CommandExecutor {
 
         int totalTextCount = 25; // the maximum tracker string length
         List<Map.Entry<String, List<JavadocMethod>>> entries = new ArrayList<>(methodsByClass.entrySet());
-        entries.sort(Comparator.comparing(Map.Entry::getKey, String::compareToIgnoreCase));
+        entries.sort(Map.Entry.comparingByKey(String::compareToIgnoreCase));
         int classesAmount = entries.size();
         for (int classIndex = 0; classIndex < classesAmount; classIndex++) {
             Map.Entry<String, List<JavadocMethod>> entry = entries.get(classIndex);
@@ -155,7 +155,7 @@ public class DocsCommand implements CommandExecutor {
                 int nextMoreSize = methodIndex == (methodsAmount - 1)
                         ? 0
                         : 11 + (int) (Math.log10(methodsAmount - methodIndex - 1) + 1);
-                if ((methodsBuilder.length() + methodBuilder.length() + nextMoreSize) <= 1024) {
+                if ((methodsBuilder.length() + methodBuilder.length() + nextMoreSize) < 1000) {
                     methodsBuilder.append(methodBuilder);
                 } else {
                     methodsBuilder.append("• ").append(methodsAmount - methodIndex).append(" more ...");
@@ -166,7 +166,7 @@ public class DocsCommand implements CommandExecutor {
                     ? 0
                     : 57 + (int) (Math.log10(classesAmount - classIndex - 1) + 1);
             String className = entry.getKey();
-            if ((totalTextCount + className.length() + methodsBuilder.length() + nextMoreSize) <= 6000) {
+            if ((totalTextCount + className.length() + methodsBuilder.length() + nextMoreSize) <= 5900) {
                 embed.addField(className, methodsBuilder.toString());
                 totalTextCount += className.length() + methodsBuilder.length();
             } else {
