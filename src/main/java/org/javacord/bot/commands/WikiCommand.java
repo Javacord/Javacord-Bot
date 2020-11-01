@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class WikiCommand implements CommandExecutor {
 
     private static final Pattern HTML_TAG = Pattern.compile("<[^>]++>");
+    private static final Pattern END_OF_SENTENCE = Pattern.compile("\\.(?: |\\r?\\n)");
 
     /**
      * Executes the {@code !wiki} command.
@@ -49,7 +51,7 @@ public class WikiCommand implements CommandExecutor {
 
         try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
+                    .setThumbnail(javacord3Icon, "png")
                     .setColor(Constants.JAVACORD_ORANGE);
             if (args.length == 0) { // Just an overview
                 embed.setTitle("Javacord Wiki")
@@ -138,15 +140,15 @@ public class WikiCommand implements CommandExecutor {
         String cleanedDescription = HTML_TAG.matcher(page.getContent()).replaceAll("").trim();
         int length = 0;
         int sentences = 0;
-        while (length < 600 && sentences < 3) {
-            int tmpLength = cleanedDescription.indexOf(". ", length);
-            length = (tmpLength > length) ? tmpLength : cleanedDescription.indexOf(".\n");
-
+        Matcher endOfSentenceMatcher = END_OF_SENTENCE.matcher(cleanedDescription);
+        while ((length < 600) && (sentences < 3) && endOfSentenceMatcher.find(length)) {
+            length = endOfSentenceMatcher.end();
             sentences++;
         }
+        length = Math.min(length, 1500);
         StringBuilder description = new StringBuilder()
                 .append(String.format("**[%s](%s)**\n\n", page.getTitle(), WikiParser.BASE_URL + page.getPath()))
-                .append(cleanedDescription, 0, length + 1);
+                .append(cleanedDescription, 0, length);
         if (length < cleanedDescription.length()) {
             description
                     .append("\n\n[*view full page*](")
