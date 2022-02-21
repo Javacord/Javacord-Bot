@@ -138,7 +138,9 @@ public class JavadocParser {
         try (ResponseBody body = response.body()) {
             Set<JavadocClass> classes = new HashSet<>();
             for (JsonNode node : mapper.readTree(body.string().replaceFirst("typeSearchIndex = ", ""))) {
-                classes.add(new JavadocClass(url, node));
+                if (node.has("p")) {
+                    classes.add(new JavadocClass(url, node));
+                }
             }
             return classes;
         }
