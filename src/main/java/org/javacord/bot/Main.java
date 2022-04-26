@@ -70,7 +70,7 @@ public class Main {
         CommandHandler handler = new JavacordHandler(api);
         handler.registerCommand(new InfoCommand());
         handler.registerCommand(new WikiCommand());
-        handler.registerCommand(new DocsCommand());
+        handler.registerCommand(new DocsCommand(versionFinder));
         handler.registerCommand(new GitHubCommand());
         handler.registerCommand(new ExampleCommand());
         handler.registerCommand(new SetupCommand(versionFinder));

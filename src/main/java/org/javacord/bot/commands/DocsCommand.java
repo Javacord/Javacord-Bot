@@ -10,6 +10,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.util.LatestVersionFinder;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
@@ -46,6 +47,17 @@ public class DocsCommand implements CommandExecutor {
      * The parameters that indicate also searching internal packages and the core docs.
      */
     private static final Set<String> includeAllParams = new HashSet<>(Arrays.asList("all", "a"));
+
+    private final LatestVersionFinder versionFinder;
+
+    /**
+     * Initializes the command.
+     *
+     * @param versionFinder The version finder to use to determine the latest Javacord version.
+     */
+    public DocsCommand(LatestVersionFinder versionFinder) {
+        this.versionFinder = versionFinder;
+    }
 
     /**
      * Executes the {@code !docs} command.
@@ -108,12 +120,12 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString, boolean includeAll) {
-        CompletableFuture<Set<JavadocMethod>> apiMethods = JavadocParser.getLatestJavaDocs(api)
-                .thenApply(urlString -> new JavadocParser(api, urlString))
+        CompletableFuture<Set<JavadocMethod>> apiMethods = versionFinder.findLatestVersion()
+                .thenApply(latestVersion -> new JavadocParser(api, "api", latestVersion))
                 .thenCompose(JavadocParser::getMethods);
         CompletableFuture<Set<JavadocMethod>> coreMethods = (includeAll)
-                ? JavadocParser.getLatestCoreJavaDocs(api)
-                .thenApply(urlString -> new JavadocParser(api, urlString))
+                ? versionFinder.findLatestVersion()
+                .thenApply(latestVersion -> new JavadocParser(api, "core", latestVersion))
                 .thenCompose(JavadocParser::getMethods)
                 : CompletableFuture.completedFuture(Collections.emptySet());
 
@@ -203,12 +215,12 @@ public class DocsCommand implements CommandExecutor {
      * @param searchString A search string.
      */
     private void populateClasses(DiscordApi api, EmbedBuilder embed, String searchString, boolean includeAll) {
-        CompletableFuture<Set<JavadocClass>> apiClasses = JavadocParser.getLatestJavaDocs(api)
-                .thenApply(urlString -> new JavadocParser(api, urlString))
+        CompletableFuture<Set<JavadocClass>> apiClasses = versionFinder.findLatestVersion()
+            .thenApply(latestVersion -> new JavadocParser(api, "api", latestVersion))
                 .thenCompose(JavadocParser::getClasses);
         CompletableFuture<Set<JavadocClass>> coreClasses = (includeAll)
-                ? JavadocParser.getLatestCoreJavaDocs(api)
-                .thenApply(urlString -> new JavadocParser(api, urlString))
+                ? versionFinder.findLatestVersion()
+            .thenApply(latestVersion -> new JavadocParser(api, "core", latestVersion))
                 .thenCompose(JavadocParser::getClasses)
                 : CompletableFuture.completedFuture(Collections.emptySet());
 

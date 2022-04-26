@@ -23,53 +23,21 @@ public class JavadocParser {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final DiscordApi api;
+    private final String staticUrl;
+
     private final String url;
 
     /**
      * Creates a new Javadoc parser.
      *
      * @param api A discord api instance.
-     * @param url The url of the JavaDocs.
+     * @param type Usually "core" or "api".
+     * @param latestVersion The latest version of Javacord.
      */
-    public JavadocParser(DiscordApi api, String url) {
+    public JavadocParser(DiscordApi api, String type, String latestVersion) {
         this.api = api;
-        this.url = url.endsWith("/") ? url : url + "/";
-    }
-
-    /**
-     * Gets the latest JavaDoc link.
-     *
-     * @param api A discord api instance.
-     * @return The latest JavaDoc link.
-     */
-    public static CompletableFuture<String> getLatestJavaDocs(DiscordApi api) {
-        return getJavadocUrl(api, "https://docs.javacord.org/api/");
-    }
-
-    /**
-     * Gets the latest core JavaDoc link.
-     *
-     * @param api A discord api instance.
-     * @return The latest core JavaDoc link.
-     */
-    public static CompletableFuture<String> getLatestCoreJavaDocs(DiscordApi api) {
-        return getJavadocUrl(api, "https://docs.javacord.org/core/");
-    }
-
-    private static CompletableFuture<String> getJavadocUrl(DiscordApi api, String url) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
-
-                try (Response response = client.newCall(request).execute()) {
-                    return response.request().url().toString();
-                }
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, api.getThreadPool().getExecutorService());
+        this.staticUrl = "https://javadoc.io/static/org.javacord/javacord-" + type + "/" + latestVersion + "/";
+        this.url = "https://javadoc.io/doc/org.javacord/javacord-" + type + "/latest/";
     }
 
     /**
@@ -110,7 +78,7 @@ public class JavadocParser {
      */
     private Set<JavadocMethod> getMethodsBlocking() throws IOException {
         Request request = new Request.Builder()
-                .url(url + "member-search-index.js")
+                .url(staticUrl + "member-search-index.js")
                 .build();
 
         Response response = client.newCall(request).execute();
@@ -131,7 +99,7 @@ public class JavadocParser {
      */
     private Set<JavadocClass> getClassesBlocking() throws IOException {
         Request request = new Request.Builder()
-                .url(url + "type-search-index.js")
+                .url(staticUrl + "type-search-index.js")
                 .build();
 
         Response response = client.newCall(request).execute();

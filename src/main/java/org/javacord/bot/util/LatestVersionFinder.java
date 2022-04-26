@@ -1,7 +1,5 @@
 package org.javacord.bot.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -12,13 +10,17 @@ import org.javacord.bot.Constants;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LatestVersionFinder {
 
     private final DiscordApi api;
 
     private static final OkHttpClient client = new OkHttpClient();
-    private static final ObjectMapper mapper = new ObjectMapper();
+
+    private static final Pattern XML_VERSION = Pattern
+        .compile("<latest>(\\d+\\.\\d+\\.\\d+)<\\/latest>", Pattern.MULTILINE);
 
     private volatile String latestVersion = "";
 
@@ -54,12 +56,13 @@ public class LatestVersionFinder {
             if (body == null) {
                 throw new RuntimeException("Error while requesting the latest version: No response body.");
             }
-            JsonNode response = mapper.readTree(body.charStream());
-            // Response format is a JSON object {"version":"x.y.z"}
-            if (!response.isObject()) {
-                throw new AssertionError("Latest Version API result differs from expectation");
+
+            // Response format is an XML object with a <latest>...</latest> tag with the version
+            Matcher matcher = XML_VERSION.matcher(body.string());
+            if (!matcher.find()) {
+                throw new RuntimeException("Failed to match latest version!");
             }
-            String latestVersion = response.get("version").asText();
+            String latestVersion = matcher.group(1);
             if (latestVersion == null || latestVersion.isEmpty()) {
                 throw new AssertionError("Latest Version API result differs from expectation");
             }

@@ -35,7 +35,7 @@ public final class Constants {
     /**
      * The API URL where to obtain the latest release version for Javacord.
      */
-    public static final String LATEST_VERSION_URL = "https://docs.javacord.org/rest/latest-version/release";
+    public static final String LATEST_VERSION_URL = "https://repo1.maven.org/maven2/org/javacord/javacord/maven-metadata.xml";
 
     private Constants() { /* nope */ }
 
