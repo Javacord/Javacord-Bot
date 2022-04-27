@@ -1,6 +1,3 @@
-import com.bmuschko.gradle.docker.tasks.DockerClient
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.github.dockerjava.api.exception.DockerException
 import groovy.json.JsonSlurper
 
 buildscript {
@@ -8,7 +5,6 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.aries:docker-java-shaded:3.1.0-rc-5'
         classpath 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.3'
     }
 }
@@ -16,7 +12,6 @@ buildscript {
 plugins {
     id 'application'
     id 'checkstyle'
-    id 'com.bmuschko.docker-remote-api' version '4.0.4'
 }
 
 group 'org.javacord'
@@ -83,46 +78,6 @@ distributions {
             from ('src/main/resources/log4j2.xml') {
                 into 'config'
             }
-        }
-    }
-}
-
-task assembleDockerContext(type: Sync) {
-    from distTar
-    from 'Dockerfile'
-    into "$buildDir/docker"
-}
-
-task buildDockerImage(type: DockerBuildImage, dependsOn: assembleDockerContext) {
-    inputDir = file("$buildDir/docker")
-    tag = project.name
-}
-
-task updateDockerService(type: DockerClient, dependsOn: buildDockerImage) {
-    onNext {
-        try {
-            // check whether docker engine is in swarm mode and a manager
-            inspectSwarmCmd().exec()
-        } catch (DockerException de) {
-            // initialize new swarm if not in swarm mode or else re-throw
-            if (new JsonSlurper().parseText(de.message).message.contains('This node is not a swarm manager')) {
-                throw new RuntimeException("This node is not a swarm manager, " +
-                        "please make it one and create a service with name '$project.name'", de)
-            } else {
-                throw de
-            }
-        }
-
-        // update the service
-        def services = listServicesCmd().withNameFilter([project.name]).exec()
-        if (services) {
-            def service = services[0]
-            def taskTemplate = service.spec.taskTemplate
-            taskTemplate = taskTemplate.withForceUpdate(taskTemplate.forceUpdate + 1)
-            updateServiceCmd(project.name, service.spec.withTaskTemplate(taskTemplate))
-                    .withVersion(service.version.index).exec()
-        } else {
-            throw new RuntimeException("Service with name '$project.name' was not found, please create it first")
         }
     }
 }
