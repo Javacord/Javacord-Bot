@@ -1,4 +1,0 @@
-rootProject.name = 'javacord-bot'
-
-// remove after upgrade to 5.0
-enableFeaturePreview 'IMPROVED_POM_SUPPORT'
