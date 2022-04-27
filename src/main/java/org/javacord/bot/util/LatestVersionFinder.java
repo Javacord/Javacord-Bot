@@ -20,7 +20,7 @@ public class LatestVersionFinder {
     private static final OkHttpClient client = new OkHttpClient();
 
     private static final Pattern XML_VERSION = Pattern
-        .compile("<latest>(\\d+\\.\\d+\\.\\d+)<\\/latest>", Pattern.MULTILINE);
+            .compile("<latest>(\\d+\\.\\d+\\.\\d+)<\\/latest>", Pattern.MULTILINE);
 
     private volatile String latestVersion = "";
 

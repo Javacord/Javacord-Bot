@@ -216,11 +216,11 @@ public class DocsCommand implements CommandExecutor {
      */
     private void populateClasses(DiscordApi api, EmbedBuilder embed, String searchString, boolean includeAll) {
         CompletableFuture<Set<JavadocClass>> apiClasses = versionFinder.findLatestVersion()
-            .thenApply(latestVersion -> new JavadocParser(api, "api", latestVersion))
+                .thenApply(latestVersion -> new JavadocParser(api, "api", latestVersion))
                 .thenCompose(JavadocParser::getClasses);
         CompletableFuture<Set<JavadocClass>> coreClasses = (includeAll)
                 ? versionFinder.findLatestVersion()
-            .thenApply(latestVersion -> new JavadocParser(api, "core", latestVersion))
+                .thenApply(latestVersion -> new JavadocParser(api, "core", latestVersion))
                 .thenCompose(JavadocParser::getClasses)
                 : CompletableFuture.completedFuture(Collections.emptySet());
 
