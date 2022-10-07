@@ -27,7 +27,7 @@ public class TalkToJamesListener implements MessageCreateListener {
         if (event.getChannel().getId() != Constants.TALK_TO_JAMES_CHANNEL_ID) {
             return;
         }
-        if (event.getMessageAuthor().isBotUser()) {
+        if (!event.getMessageAuthor().isRegularUser()) {
             return;
         }
 
