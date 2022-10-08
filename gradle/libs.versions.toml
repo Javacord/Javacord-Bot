@@ -1,0 +1,21 @@
+[versions]
+checkstyle = "8.14"
+jackson = "2.9.3"
+javacord = "3.1.1"
+log4j = "2.17.1"
+okhttp = "3.9.1"
+sdcf4j = "v1.0.10"
+
+[libraries]
+javacord = { module = "org.javacord:javacord", version.ref = "javacord" }
+sdcf4j-javacord = { module = "de.btobastian.sdcf4j:sdcf4j-javacord", version.ref = "sdcf4j" }
+sdcf4j-core = { module = "de.btobastian.sdcf4j:sdcf4j-core", version.ref = "sdcf4j" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+
+[bundles]
+sdcf4j = ["sdcf4j-javacord", "sdcf4j-core"]

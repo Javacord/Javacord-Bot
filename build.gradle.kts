@@ -9,16 +9,15 @@ repositories {
 }
 
 dependencies {
-    implementation("org.javacord:javacord:3.1.1")
-    implementation("de.btobastian.sdcf4j:sdcf4j-javacord:v1.0.10")
-    implementation("de.btobastian.sdcf4j:sdcf4j-core:v1.0.10")
-    implementation("com.squareup.okhttp3:okhttp:3.9.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.3")
-    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
-    implementation("org.apache.logging.log4j:log4j-jul:2.17.1")
+    implementation(libs.javacord)
+    implementation(libs.bundles.sdcf4j)
+    implementation(libs.okhttp)
+    implementation(libs.jackson.databind)
+    implementation(libs.log4j.api)
+    implementation(libs.log4j.jul)
 
-    runtimeOnly("org.apache.logging.log4j:log4j-core:2.17.1")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
+    runtimeOnly(libs.log4j.core)
+    runtimeOnly(libs.log4j.slf4j.impl)
 }
 
 application {
@@ -26,6 +25,6 @@ application {
 }
 
 checkstyle {
-    toolVersion = "8.14"
+    toolVersion = libs.versions.checkstyle.get()
     maxWarnings = 0
 }
