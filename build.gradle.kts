@@ -21,6 +21,12 @@ dependencies {
     runtimeOnly(libs.log4j.slf4j.impl)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
+    }
+}
+
 application {
     mainClass.set("org.javacord.bot.Main")
 }
