@@ -4,8 +4,8 @@ plugins {
 }
 
 repositories {
-    jcenter()
-    maven {  url = uri("https://jitpack.io") }
+    mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -25,7 +25,7 @@ application {
     mainClass.set("org.javacord.bot.Main")
 }
 
-configure<CheckstyleExtension> {
+checkstyle {
     toolVersion = "8.14"
     maxWarnings = 0
 }
