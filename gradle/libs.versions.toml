@@ -1,5 +1,6 @@
 [versions]
 checkstyle = "8.14"
+gradlePlugin-utf8 = "0.1.0"
 jackson = "2.9.3"
 javacord = "3.1.1"
 log4j = "2.17.1"
@@ -19,3 +20,6 @@ log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", versi
 
 [bundles]
 sdcf4j = ["sdcf4j-javacord", "sdcf4j-core"]
+
+[plugins]
+utf8 = { id = "com.github.sgtsilvio.gradle.utf8", version.ref = "gradlePlugin-utf8" }

@@ -1,6 +1,7 @@
 plugins {
     application
     checkstyle
+    alias(libs.plugins.utf8)
 }
 
 repositories {
