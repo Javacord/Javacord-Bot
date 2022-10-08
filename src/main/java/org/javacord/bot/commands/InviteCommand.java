@@ -36,7 +36,7 @@ public class InviteCommand implements CommandExecutor {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon, "png")
                     .setColor(Constants.JAVACORD_ORANGE)
-                    .addField("Invite Link", "https://discordapp.com/invite/0qJ2jjyneLEgG7y3");
+                    .addField("Invite Link", "https://discord.gg/javacord");
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
