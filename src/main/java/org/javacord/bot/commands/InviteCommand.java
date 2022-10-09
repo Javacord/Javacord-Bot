@@ -1,46 +1,51 @@
 package org.javacord.bot.commands;
 
-import de.btobastian.sdcf4j.Command;
-import de.btobastian.sdcf4j.CommandExecutor;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import net.kautler.command.api.CommandContext;
+import net.kautler.command.api.annotation.Asynchronous;
+import net.kautler.command.api.annotation.Description;
+import net.kautler.command.api.parameter.Parameters;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
-import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.javacord.bot.Constants.JAVACORD_ORANGE;
+
 /**
  * The !invite command which is used to get an invite link to the Javacord Discord server.
  */
-public class InviteCommand implements CommandExecutor {
+@ApplicationScoped
+@Description("Shows the invite link to the Javacord server")
+@Asynchronous
+public class InviteCommand extends BaseTextCommand {
+    @Inject
+    Logger logger;
 
     /**
      * Executes the {@code !invite} command.
-     *
-     * @param server  The server where the command was issued.
-     * @param channel The channel where the command was issued.
-     * @param message The message the command was issued in.
-     * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
-    @Command(aliases = {"!invite"}, async = true, description = "Shows the invite link to the Javacord server")
-    public void onCommand(Server server, TextChannel channel, Message message) throws IOException {
-        // Only react in #java_javacord channel on Discord API server
-        if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
-            return;
-        }
-
-        try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
+    @Override
+    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
+                             TextChannel channel, Parameters<String> parameters) {
+        try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setThumbnail(javacord3Icon, "png")
-                    .setColor(Constants.JAVACORD_ORANGE)
+                    .setThumbnail(javacord3Icon)
+                    .setColor(JAVACORD_ORANGE)
                     .addField("Invite Link", "https://discord.gg/javacord");
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
+        } catch (IOException ioe) {
+            logger
+                    .atError()
+                    .withThrowable(ioe)
+                    .log("Exception while closing image stream");
         }
     }
-
 }

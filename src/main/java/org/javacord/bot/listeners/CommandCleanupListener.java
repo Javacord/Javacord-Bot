@@ -1,5 +1,10 @@
 package org.javacord.bot.listeners;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.DiscordEntity;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -14,7 +19,10 @@ import java.util.function.Predicate;
 /**
  * A listener to clean up our responses to user commands if the command was deleted.
  */
+@ApplicationScoped
 public class CommandCleanupListener implements MessageDeleteListener {
+    @Inject
+    DiscordApi discordApi;
 
     /**
      * Inserts a tracking footer into an embed builder.
@@ -26,6 +34,10 @@ public class CommandCleanupListener implements MessageDeleteListener {
     public static EmbedBuilder insertResponseTracker(EmbedBuilder builder, long trackedMessageId) {
         return builder.setFooter(longToBinaryBlankString(trackedMessageId)
                 + "If you delete your invocation message, this response will be deleted.");
+    }
+
+    void registerListener(@Observes @Initialized(ApplicationScoped.class) Object __) {
+        discordApi.addMessageDeleteListener(this);
     }
 
     @Override
@@ -53,7 +65,7 @@ public class CommandCleanupListener implements MessageDeleteListener {
                 .isPresent();
     }
 
-    private static String longToBinaryBlankString(long l)  {
+    private static String longToBinaryBlankString(long l) {
         return Long.toBinaryString(l)
                 .replace('0', '\u200B')
                 .replace('1', '\u200C')

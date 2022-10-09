@@ -1,21 +1,24 @@
 package org.javacord.bot.commands;
 
-import de.btobastian.sdcf4j.Command;
-import de.btobastian.sdcf4j.CommandExecutor;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import net.kautler.command.api.CommandContext;
+import net.kautler.command.api.annotation.Asynchronous;
+import net.kautler.command.api.annotation.Description;
+import net.kautler.command.api.annotation.Usage;
+import net.kautler.command.api.parameter.Parameters;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
-import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,88 +31,131 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+import static org.javacord.bot.Constants.ERROR_COLOR;
+import static org.javacord.bot.Constants.JAVACORD_ORANGE;
+
 /**
  * The !docs command which is used to show links to Javacord's JavaDocs.
  */
-public class DocsCommand implements CommandExecutor {
-
+@ApplicationScoped
+@Description("Shows a link to the JavaDoc or searches through it")
+@Usage("[[('classes' | 'class' | 'c' | 'methods' | 'method' | 'm')] [('all' | 'a')] <search...>]")
+@Asynchronous
+public class DocsCommand extends BaseTextCommand {
     /**
      * The parameters that indicate searching for class names only.
      */
-    private static final Set<String> classParams = new HashSet<>(Arrays.asList("classes", "class", "c"));
+    private static final Set<String> CLASS_PARAMS = new HashSet<>(Arrays.asList("classes", "class", "c"));
 
     /**
      * The parameters that indicate searching for method names only.
      */
-    private static final Set<String> methodParams = new HashSet<>(Arrays.asList("methods", "method", "m"));
+    private static final Set<String> METHOD_PARAMS = new HashSet<>(Arrays.asList("methods", "method", "m"));
 
     /**
      * The parameters that indicate also searching internal packages and the core docs.
      */
-    private static final Set<String> includeAllParams = new HashSet<>(Arrays.asList("all", "a"));
+    private static final Set<String> INCLUDE_ALL_PARAMS = new HashSet<>(Arrays.asList("all", "a"));
 
-    private final LatestVersionFinder versionFinder;
+    @Inject
+    Logger logger;
 
-    /**
-     * Initializes the command.
-     *
-     * @param versionFinder The version finder to use to determine the latest Javacord version.
-     */
-    public DocsCommand(LatestVersionFinder versionFinder) {
-        this.versionFinder = versionFinder;
-    }
+    @Inject
+    LatestVersionFinder versionFinder;
 
     /**
      * Executes the {@code !docs} command.
-     *
-     * @param server  The server where the command was issued.
-     * @param channel The channel where the command was issued.
-     * @param message The message the command was issued in.
-     * @param args    The arguments given to the command.
-     * @throws IOException If the Javacord icon stream cannot be closed properly.
      */
-    @Command(aliases = {"!docs"}, async = true, usage = "!docs [method|class] <search>",
-            description = "Shows a link to the JavaDoc or searches through it")
-    public void onCommand(Server server, TextChannel channel, Message message, String[] args) throws IOException {
-        // Only react in #java_javacord channel on Discord API server
-        if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
-            return;
-        }
+    @Override
+    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
+                             TextChannel channel, Parameters<String> parameters) {
+        DiscordApi api = channel.getApi();
 
-        try (InputStream javacord3Icon = getClass().getClassLoader().getResourceAsStream("javacord3_icon.png")) {
+        try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setThumbnail(javacord3Icon, "png")
-                    .setColor(Constants.JAVACORD_ORANGE);
-            if (args.length == 0) { // Just give an overview
-                embed.addField("Overview", "https://docs.javacord.org/")
-                        .addField("Latest release version", "https://docs.javacord.org/api/v/latest")
-                        .addField("Latest snapshot", "https://docs.javacord.org/api/build/latest")
-                        .addField("Hint", "You can search the docs using `!docs [method|class] <search>`");
-            } else if (args.length == 1) { // Basic search - methods without internals
-                populateMethods(channel.getApi(), embed, args[0], false);
-            } else { // Extended search
-                if (classParams.contains(args[0])) { // Search for a class
-                    boolean searchAll = args.length > 2 && includeAllParams.contains(args[1]);
-                    String searchString = String.join(" ", Arrays.copyOfRange(args, searchAll ? 2 : 1, args.length));
-                    populateClasses(channel.getApi(), embed, searchString, searchAll);
-                } else if (methodParams.contains(args[0])) { // Search for a method
-                    boolean searchAll = args.length > 2 && includeAllParams.contains(args[1]);
-                    String searchString = String.join(" ", Arrays.copyOfRange(args, searchAll ? 2 : 1, args.length));
-                    populateMethods(channel.getApi(), embed, searchString, searchAll);
-                } else { // Search for a method
-                    boolean searchAll = includeAllParams.contains(args[0]);
-                    String searchString = String.join(" ", Arrays.copyOfRange(args, searchAll ? 1 : 0, args.length));
-                    populateMethods(channel.getApi(), embed, searchString, searchAll);
+                    .setThumbnail(javacord3Icon)
+                    .setColor(JAVACORD_ORANGE);
+
+            switch (parameters.size()) {
+                case 0: // Just give an overview
+                    embed.setTitle("Javacord Docs")
+                            .addField("Overview", "https://docs.javacord.org/")
+                            .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest")
+                            .addField("Hint", format(
+                                    "You can search the docs using `%s%s %s`",
+                                    commandContext.getPrefix().orElseThrow(AssertionError::new),
+                                    commandContext.getAlias().orElseThrow(AssertionError::new),
+                                    getUsage().orElseThrow(AssertionError::new)));
+                    break;
+
+                case 1:
+                    populateMethods(api, embed, parameters.get("search").orElseThrow(AssertionError::new), false);
+                    break;
+
+                case 2: {
+                    String searchString = parameters.get("search").orElseThrow(AssertionError::new);
+                    if (includeAll(parameters)) {
+                        populateMethods(api, embed, searchString, true);
+                    } else if (classSearch(parameters)) {
+                        populateClasses(api, embed, searchString, false);
+                    } else if (methodSearch(parameters)) {
+                        populateMethods(api, embed, searchString, false);
+                    } else {
+                        throw new AssertionError("Unexpected state while parameter count 2");
+                    }
+                    break;
                 }
+
+                case 3: {
+                    if (!includeAll(parameters)) {
+                        throw new AssertionError("Unexpected includeAll false while parameter count 3");
+                    }
+                    String searchString = parameters.get("search").orElseThrow(AssertionError::new);
+                    if (classSearch(parameters)) {
+                        populateClasses(api, embed, searchString, true);
+                    } else if (methodSearch(parameters)) {
+                        populateMethods(api, embed, searchString, true);
+                    } else {
+                        throw new AssertionError("Unexpected state while parameter count 3");
+                    }
+                    break;
+                }
+
+                default:
+                    throw new AssertionError(format("Missing case for parameter count '%s'", parameters.size()));
             }
+
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
         } catch (Throwable t) {
-            channel.sendMessage(
-                    "Something went wrong: ```" + ExceptionLogger.unwrapThrowable(t).getMessage() + "```").join();
-            // Throw the caught exception again. The sdcf4j will log it.
-            throw t;
+            logger
+                    .atError()
+                    .withThrowable(t)
+                    .log("Exception while handling docs command");
+
+            EmbedBuilder embed = new EmbedBuilder()
+                    .setTitle("Error")
+                    .setDescription(format(
+                            "Something went wrong: ```%s```",
+                            ExceptionLogger.unwrapThrowable(t).getMessage()))
+                    .setColor(ERROR_COLOR);
+
+            CommandCleanupListener.insertResponseTracker(embed, message.getId());
+            channel.sendMessage(embed).join();
         }
+    }
+
+    private boolean classSearch(Parameters<String> parameters) {
+        return parameters.getParameterNames().stream().anyMatch(CLASS_PARAMS::contains);
+    }
+
+    private boolean methodSearch(Parameters<String> parameters) {
+        return parameters.getParameterNames().stream().anyMatch(METHOD_PARAMS::contains);
+    }
+
+    private boolean includeAll(Parameters<String> parameters) {
+        return parameters.getParameterNames().stream().anyMatch(INCLUDE_ALL_PARAMS::contains);
     }
 
     /**
