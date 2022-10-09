@@ -5,30 +5,26 @@ import jakarta.inject.Inject;
 import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.Description;
-import net.kautler.command.api.parameter.Parameters;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The !setup command which is used to get information useful for first setup.
+ * The /setup command which is used to get information useful for first setup.
  */
 @ApplicationScoped
 @Description("Shows useful information to setup a Javacord bot")
 @Asynchronous
-public class SetupCommand extends BaseTextCommand {
+public class SetupCommand extends BaseSlashCommand {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code !setup} command.
+     * Executes the {@code /setup} command.
      */
     @Override
-    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
-                             TextChannel channel, Parameters<String> parameters) {
+    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
         String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
@@ -54,8 +50,6 @@ public class SetupCommand extends BaseTextCommand {
                         "• [IntelliJ + Gradle](https://javacord.org/wiki/getting-started/intellij-gradle/) (recommended)\n"
                                 + "• [IntelliJ + Maven](https://javacord.org/wiki/getting-started/intellij-maven/)\n"
                                 + "• [Eclipse + Maven](https://javacord.org/wiki/getting-started/eclipse-maven/)");
-
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
-        channel.sendMessage(embed).join();
+        sendResponse(commandContext.getMessage(), embed).join();
     }
 }
