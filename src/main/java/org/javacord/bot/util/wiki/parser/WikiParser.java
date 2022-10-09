@@ -40,7 +40,7 @@ public class WikiParser {
     /**
      * Creates a new Wiki parser.
      *
-     * @param api The Discord Api of which to use the HTTP client.
+     * @param api    The Discord Api of which to use the HTTP client.
      * @param apiUrl The URL for the json file with the page list.
      */
     public WikiParser(DiscordApi api, String apiUrl) {
@@ -99,7 +99,7 @@ public class WikiParser {
 
     private String[] asStringArray(JsonNode arrayNode) {
         if (!arrayNode.isArray()) {
-            return new String[] {};
+            return new String[]{};
         }
         String[] result = new String[arrayNode.size()];
         int i = 0;

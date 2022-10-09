@@ -30,8 +30,8 @@ public class JavadocParser {
     /**
      * Creates a new Javadoc parser.
      *
-     * @param api A discord api instance.
-     * @param type Usually "core" or "api".
+     * @param api           A discord api instance.
+     * @param type          Usually "core" or "api".
      * @param latestVersion The latest version of Javacord.
      */
     public JavadocParser(DiscordApi api, String type, String latestVersion) {

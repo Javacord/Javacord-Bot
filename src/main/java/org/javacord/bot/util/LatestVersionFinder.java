@@ -1,10 +1,13 @@
 package org.javacord.bot.util;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
 
 import java.io.IOException;
@@ -13,9 +16,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LatestVersionFinder {
+import static org.javacord.bot.Constants.LATEST_VERSION_URL;
 
-    private final DiscordApi api;
+@ApplicationScoped
+public class LatestVersionFinder {
+    @Inject
+    Logger logger;
+
+    @Inject
+    DiscordApi api;
 
     private static final OkHttpClient client = new OkHttpClient();
 
@@ -25,14 +34,21 @@ public class LatestVersionFinder {
     private volatile String latestVersion = "";
 
     /**
-     * Initialize the Version finder.
-     * @param api The api object of which to obtain the Scheduler.
+     * Initialize the latest version finder.
      */
-    public LatestVersionFinder(DiscordApi api) {
-        this.api = api;
-        // Populate with latest version
-        CompletableFuture.supplyAsync(this::getAndUpdateVersionSync, api.getThreadPool().getExecutorService())
-                .exceptionally(ExceptionLogger.get());
+    @PostConstruct
+    void populateWithLatestVersion() {
+        ExecutorService executorService = api.getThreadPool().getExecutorService();
+        CompletableFuture
+                .supplyAsync(this::getAndUpdateVersionSync, executorService)
+                .whenComplete((__, throwable) -> {
+                    if (throwable != null) {
+                        logger
+                                .atError()
+                                .withThrowable(throwable)
+                                .log("Exception while populating the latest version finder");
+                    }
+                });
     }
 
     /**
@@ -44,13 +60,20 @@ public class LatestVersionFinder {
      */
     public CompletableFuture<String> findLatestVersion() {
         ExecutorService executorService = api.getThreadPool().getExecutorService();
-        return CompletableFuture.supplyAsync(this::getAndUpdateVersionSync, executorService)
-                .exceptionally(ExceptionLogger.get().andThen(value -> latestVersion));
+        return CompletableFuture
+                .supplyAsync(this::getAndUpdateVersionSync, executorService)
+                .exceptionally(throwable -> {
+                    logger
+                            .atError()
+                            .withThrowable(throwable)
+                            .log("Exception while finding the latest version");
+                    return latestVersion;
+                });
     }
 
     private String getAndUpdateVersionSync() {
         Request request = new Request.Builder()
-                .url(Constants.LATEST_VERSION_URL)
+                .url(LATEST_VERSION_URL)
                 .build();
         try (ResponseBody body = client.newCall(request).execute().body()) {
             if (body == null) {
@@ -74,5 +97,4 @@ public class LatestVersionFinder {
             throw new RuntimeException("Error while requesting the latest version", e);
         }
     }
-
 }

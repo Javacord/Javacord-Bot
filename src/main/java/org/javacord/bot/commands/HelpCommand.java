@@ -1,76 +1,80 @@
 package org.javacord.bot.commands;
 
-import de.btobastian.sdcf4j.Command;
-import de.btobastian.sdcf4j.CommandExecutor;
-import de.btobastian.sdcf4j.CommandHandler;
-import org.javacord.api.DiscordApi;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import net.kautler.command.api.Command;
+import net.kautler.command.api.CommandContext;
+import net.kautler.command.api.annotation.Asynchronous;
+import net.kautler.command.api.annotation.Description;
+import net.kautler.command.api.parameter.Parameters;
+import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
-import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static java.util.Comparator.comparing;
+import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !help command which is used to list all commands.
  */
-public class HelpCommand implements CommandExecutor {
+@ApplicationScoped
+@Description("Shows the help page")
+@Asynchronous
+public class HelpCommand extends BaseTextCommand {
+    @Inject
+    Logger logger;
 
-    private final CommandHandler commandHandler;
-
-    /**
-     * Initializes the command.
-     *
-     * @param commandHandler The command handler used to extract command usages and descriptions.
-     */
-    public HelpCommand(CommandHandler commandHandler) {
-        this.commandHandler = commandHandler;
-    }
+    @Inject
+    Instance<Command<Message>> textCommands;
 
     /**
      * Executes the {@code !help} command.
-     *
-     * @param api The Discord api.
-     * @param server  The server where the command was issued.
-     * @param channel The channel where the command was issued.
-     * @param message The message triggering the command.
-     * @param args The command's arguments.
      */
-    @Command(aliases = {"!help"}, async = true, description = "Shows the help page")
-    public void onCommand(DiscordApi api, Server server, TextChannel channel, Message message, String[] args) {
-        // Only react in #java_javacord channel on Discord API server
-        if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
-            return;
-        }
-
-        if (args.length >= 1) { // TODO Provide help for specific commands (e.g., "!help wiki")
+    @Override
+    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
+                             TextChannel channel, Parameters<String> parameters) {
+        // TODO Provide help for specific commands (e.g., "!help wiki")
+        try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("Error")
-                    .setDescription("The `!help` command does not accept arguments!")
-                    .setColor(Constants.ERROR_COLOR);
+                    .setThumbnail(javacord3Icon)
+                    .setTitle("Commands")
+                    .setColor(JAVACORD_ORANGE);
+
+            String prefix = commandContext.getPrefix().orElseThrow(AssertionError::new);
+            textCommands
+                    .stream()
+                    .sorted(comparing(command -> command.getAliases().get(0)))
+                    .forEachOrdered(command -> {
+                        List<String> lines = new ArrayList<>();
+                        if (command.getAliases().size() > 1) {
+                            lines.add("**Aliases: **" + command.getAliases().stream().skip(1).collect(Collectors.joining(", " + prefix, prefix, "")));
+                        }
+                        command.getDescription().ifPresent(description -> lines.add(format("**Description:** %s", description)));
+                        command.getUsage().ifPresent(usage -> lines.add(format("**Usage:** `%s`", usage)));
+                        String commandInfo = String.join("\n", lines);
+                        if (commandInfo.isBlank()) {
+                            commandInfo = "\u200B";
+                        }
+                        embed.addField(format("**__%s%s__**", prefix, command.getAliases().get(0)), commandInfo);
+                    });
+
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
-            return;
+        } catch (IOException ioe) {
+            logger
+                    .atError()
+                    .withThrowable(ioe)
+                    .log("Exception while closing image stream");
         }
-
-        EmbedBuilder embed = new EmbedBuilder()
-                .setThumbnail(getClass().getClassLoader().getResourceAsStream("javacord3_icon.png"), "png")
-                .setTitle("Commands")
-                .setColor(Constants.JAVACORD_ORANGE);
-
-        for (CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()) {
-            if (!simpleCommand.getCommandAnnotation().showInHelpPage()) {
-                continue; // skip command
-            }
-            String usage = simpleCommand.getCommandAnnotation().usage();
-            if (usage.isEmpty()) { // no usage provided, using the first alias
-                usage = simpleCommand.getCommandAnnotation().aliases()[0];
-            }
-            String description = simpleCommand.getCommandAnnotation().description();
-            embed.addField("**__" + usage + "__**", description);
-        }
-
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
-        channel.sendMessage(embed).join();
     }
 }

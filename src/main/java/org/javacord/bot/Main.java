@@ -1,24 +1,10 @@
 package org.javacord.bot;
 
-import de.btobastian.sdcf4j.CommandHandler;
-import de.btobastian.sdcf4j.handler.JavacordHandler;
-import org.javacord.api.DiscordApi;
-import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.util.logging.ExceptionLogger;
-import org.javacord.bot.commands.DocsCommand;
-import org.javacord.bot.commands.ExampleCommand;
-import org.javacord.bot.commands.GitHubCommand;
-import org.javacord.bot.commands.GradleCommand;
-import org.javacord.bot.commands.HelpCommand;
-import org.javacord.bot.commands.InfoCommand;
-import org.javacord.bot.commands.InviteCommand;
-import org.javacord.bot.commands.MavenCommand;
-import org.javacord.bot.commands.Sdcf4jCommand;
-import org.javacord.bot.commands.SetupCommand;
-import org.javacord.bot.commands.WikiCommand;
-import org.javacord.bot.listeners.CommandCleanupListener;
-import org.javacord.bot.listeners.TalkToJamesListener;
-import org.javacord.bot.util.LatestVersionFinder;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
+import jakarta.inject.Named;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
+
+@ApplicationScoped
 public class Main {
+    @Produces
+    @Named
+    static String discordToken;
 
     /**
      * The entry point of the bot.
@@ -46,46 +39,25 @@ public class Main {
             System.exit(1);
         }
 
-        DiscordApiBuilder apiBuilder = new DiscordApiBuilder();
-
-        // Token
         Path tokenFile = Paths.get(args[0]);
         if (Files.isRegularFile(tokenFile)) {
             try (BufferedReader tokenFileReader = Files.newBufferedReader(tokenFile)) {
-                apiBuilder.setToken(tokenFileReader.readLine());
+                discordToken = tokenFileReader.readLine();
             }
         } else {
-            apiBuilder.setToken(args[0]);
+            discordToken = args[0];
         }
 
-        // Login
-        DiscordApi api = apiBuilder
-                .setWaitForServersOnStartup(false)
-                .login().join();
-
-        // Tool for finding the latest version.
-        LatestVersionFinder versionFinder = new LatestVersionFinder(api);
-
-        // Register commands
-        CommandHandler handler = new JavacordHandler(api);
-        handler.registerCommand(new InfoCommand());
-        handler.registerCommand(new WikiCommand());
-        handler.registerCommand(new DocsCommand(versionFinder));
-        handler.registerCommand(new GitHubCommand());
-        handler.registerCommand(new ExampleCommand());
-        handler.registerCommand(new SetupCommand(versionFinder));
-        handler.registerCommand(new GradleCommand(versionFinder));
-        handler.registerCommand(new MavenCommand(versionFinder));
-        handler.registerCommand(new InviteCommand());
-        handler.registerCommand(new Sdcf4jCommand());
-        handler.registerCommand(new HelpCommand(handler));
-
-        api.addMessageDeleteListener(new CommandCleanupListener());
-        api.addMessageCreateListener(new TalkToJamesListener(handler));
+        SeContainerInitializer
+                .newInstance()
+                .addProperty("org.jboss.weld.construction.relaxed", FALSE)
+                .addPackages(true, Main.class)
+                .initialize();
     }
 
     private static void setupLogging() throws IOException {
         System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getName());
+        System.setProperty("org.jboss.logging.provider", "log4j2");
 
         String log4jConfigurationFileProperty = System.getProperty("log4j.configurationFile");
         if (log4jConfigurationFileProperty != null) {
@@ -97,7 +69,10 @@ public class Main {
             }
         }
 
-        Thread.setDefaultUncaughtExceptionHandler(ExceptionLogger.getUncaughtExceptionHandler());
+        setDefaultUncaughtExceptionHandler((thread, throwable) -> LogManager
+                .getLogger(throwable.getStackTrace()[0].getClassName())
+                .atError()
+                .withThrowable(throwable)
+                .log("Caught unhandled exception on thread '{}'!", thread::getName));
     }
-
 }

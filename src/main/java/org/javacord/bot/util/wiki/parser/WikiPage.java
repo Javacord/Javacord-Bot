@@ -13,10 +13,10 @@ public class WikiPage implements Comparable<WikiPage> {
     /**
      * Creates a new wiki page.
      *
-     * @param title The title of the page.
+     * @param title    The title of the page.
      * @param keywords The keywords the page is tagged with.
-     * @param path The path of the page, relative to the wiki's base URL.
-     * @param content The content of the page.
+     * @param path     The path of the page, relative to the wiki's base URL.
+     * @param content  The content of the page.
      */
     public WikiPage(String title, String[] keywords, String path, String content) {
         this.title = title;

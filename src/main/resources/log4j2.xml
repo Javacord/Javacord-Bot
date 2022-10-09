@@ -3,7 +3,7 @@
     <Appenders>
         <Console name="Console Appender">
             <PatternLayout disableAnsi="false">
-                <Pattern><![CDATA[%highlight{%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m}%n]]></Pattern>
+                <Pattern><![CDATA[%highlight{%d <%-5p> <%-35.35t> <%x> <%X> <%50.50c> %m}{TRACE = magenta}%n]]></Pattern>
             </PatternLayout>
         </Console>
         <File name="File Appender" fileName="log/javacord-bot.log" createOnDemand="true">
@@ -20,8 +20,8 @@
         </RollingRandomAccessFile>-->
     </Appenders>
     <Loggers>
-        <Root level="ALL">
-            <AppenderRef ref="Console Appender" level="DEBUG"/>
+        <Root level="INFO">
+            <AppenderRef ref="Console Appender" level="ALL"/>
             <!--<AppenderRef ref="File Appender" level="DEBUG"/>-->
             <!--<AppenderRef ref="ALL File Appender"/>-->
         </Root>

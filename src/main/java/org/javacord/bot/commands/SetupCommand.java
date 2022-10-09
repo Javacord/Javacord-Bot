@@ -1,46 +1,38 @@
 package org.javacord.bot.commands;
 
-import de.btobastian.sdcf4j.Command;
-import de.btobastian.sdcf4j.CommandExecutor;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import net.kautler.command.api.CommandContext;
+import net.kautler.command.api.annotation.Asynchronous;
+import net.kautler.command.api.annotation.Description;
+import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
-import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
+
+import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !setup command which is used to get information useful for first setup.
  */
-public class SetupCommand implements CommandExecutor {
-
-    private final LatestVersionFinder versionFinder;
-
-    /**
-     * Initializes the Command.
-     * @param versionFinder The version finder to use to determine the latest javacord version.
-     */
-    public SetupCommand(LatestVersionFinder versionFinder) {
-        this.versionFinder = versionFinder;
-    }
+@ApplicationScoped
+@Description("Shows useful information to setup a Javacord bot")
+@Asynchronous
+public class SetupCommand extends BaseTextCommand {
+    @Inject
+    LatestVersionFinder versionFinder;
 
     /**
      * Executes the {@code !setup} command.
-     *
-     * @param server  The server where the command was issued.
-     * @param channel The channel where the command was issued.
-     * @param message The message the command was issued in.
      */
-    @Command(aliases = {"!setup"}, async = true, description = "Shows useful information to setup a Javacord bot")
-    public void onCommand(Server server, TextChannel channel, Message message) {
-        // Only react in #java_javacord channel on Discord API server
-        if ((server.getId() == Constants.DAPI_SERVER_ID) && (channel.getId() != Constants.DAPI_JAVACORD_CHANNEL_ID)) {
-            return;
-        }
+    @Override
+    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
+                             TextChannel channel, Parameters<String> parameters) {
         String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
-                .setColor(Constants.JAVACORD_ORANGE)
+                .setColor(JAVACORD_ORANGE)
                 .addField("Gradle Dependency",
                         "```groovy\n"
                                 + "repositories { \n"
@@ -67,5 +59,4 @@ public class SetupCommand implements CommandExecutor {
         CommandCleanupListener.insertResponseTracker(embed, message.getId());
         channel.sendMessage(embed).join();
     }
-
 }
