@@ -5,30 +5,26 @@ import jakarta.inject.Inject;
 import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.Description;
-import net.kautler.command.api.parameter.Parameters;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The !gradle command which is used to get information about Javacord with Gradle.
+ * The /gradle command which is used to get information about Javacord with Gradle.
  */
 @ApplicationScoped
 @Description("Shows the Gradle dependency")
 @Asynchronous
-public class GradleCommand extends BaseTextCommand {
+public class GradleCommand extends BaseSlashCommand {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code !gradle} command.
+     * Executes the {@code /gradle} command.
      */
     @Override
-    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
-                             TextChannel channel, Parameters<String> parameters) {
+    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
         String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
@@ -42,8 +38,6 @@ public class GradleCommand extends BaseTextCommand {
                                 + "}\n"
                                 + "```")
                 .addField("Setup Guide", "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-gradle/)");
-
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
-        channel.sendMessage(embed).join();
+        sendResponse(commandContext.getMessage(), embed).join();
     }
 }
