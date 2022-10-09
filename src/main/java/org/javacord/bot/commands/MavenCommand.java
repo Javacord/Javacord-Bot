@@ -5,30 +5,26 @@ import jakarta.inject.Inject;
 import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.Description;
-import net.kautler.command.api.parameter.Parameters;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The !maven command which is used to get information about Javacord with Maven.
+ * The /maven command which is used to get information about Javacord with Maven.
  */
 @ApplicationScoped
 @Description("Shows the Maven dependency")
 @Asynchronous
-public class MavenCommand extends BaseTextCommand {
+public class MavenCommand extends BaseSlashCommand {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code !maven} command.
+     * Executes the {@code /maven} command.
      */
     @Override
-    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
-                             TextChannel channel, Parameters<String> parameters) {
+    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
         String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
@@ -44,8 +40,6 @@ public class MavenCommand extends BaseTextCommand {
                 .addField("Setup Guides",
                         "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-maven/)\n"
                                 + "• [Eclipse](https://javacord.org/wiki/getting-started/eclipse-maven/)");
-
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
-        channel.sendMessage(embed).join();
+        sendResponse(commandContext.getMessage(), embed).join();
     }
 }
