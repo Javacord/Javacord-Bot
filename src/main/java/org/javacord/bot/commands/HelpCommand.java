@@ -45,7 +45,7 @@ public class HelpCommand extends BaseTextCommand {
         try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
-                    .setTitle("Commands")
+                    .setTitle("Text Commands")
                     .setColor(Constants.JAVACORD_ORANGE);
 
             String prefix = commandContext.getPrefix().orElseThrow(AssertionError::new);
@@ -73,6 +73,7 @@ public class HelpCommand extends BaseTextCommand {
                         }
                         embed.addField(String.format("**__%s%s__**", prefix, command.getAliases().get(0)), commandInfo);
                     });
+            embed.addField("\u200B", "*More commands are available as slash commands, just type `/` to discover them*");
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
