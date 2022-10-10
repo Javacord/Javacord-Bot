@@ -35,4 +35,10 @@ public abstract class BaseSlashCommand implements SlashCommandJavacord {
         responder.addEmbed(embed);
         return responder.respond();
     }
+
+    protected CompletableFuture<InteractionOriginalResponseUpdater> sendResponseLater(
+            SlashCommandInteraction slashCommandInteraction) {
+        return slashCommandInteraction.respondLater(
+                !slashCommandInteraction.getOptionBooleanValueByName(SHOW_TO_EVERYONE).orElse(Boolean.FALSE));
+    }
 }

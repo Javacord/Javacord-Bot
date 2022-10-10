@@ -5,16 +5,14 @@ import jakarta.inject.Inject;
 import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.Description;
-import net.kautler.command.api.annotation.Usage;
-import net.kautler.command.api.parameter.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandOption;
+import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.wiki.parser.WikiPage;
 import org.javacord.bot.util.wiki.parser.WikiParser;
 
@@ -23,105 +21,94 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * The !wiki command which is used to link to Javacord's wiki.
+ * The /wiki command which is used to link to Javacord's wiki.
  */
 @ApplicationScoped
 @Description("Shows a link to the wiki or searches through it")
-@Usage("[[('title' | 't' | 'page' | 'p' | 'full' | 'f' | 'content' | 'c')] <search...>]")
 @Asynchronous
-public class WikiCommand extends BaseTextCommand {
+public class WikiCommand extends BaseSlashCommand {
+    private static final String SEARCH_TERM = "search-term";
+    private static final String SEARCH_IN_KEYWORDS = "search-in-keywords";
+    private static final String SEARCH_IN_TITLES = "search-in-titles";
+    private static final String SEARCH_IN_CONTENTS = "search-in-contents";
     private static final Pattern HTML_TAG = Pattern.compile("<[^>]++>");
     private static final Pattern END_OF_SENTENCE = Pattern.compile("\\.(?: |\\r?\\n)");
 
     @Inject
     Logger logger;
 
+    @Override
+    protected List<SlashCommandOption> doGetOptions() {
+        return List.of(
+                SlashCommandOption.createStringOption(
+                        SEARCH_TERM,
+                        "The term to search for",
+                        false),
+                SlashCommandOption.createBooleanOption(
+                        SEARCH_IN_KEYWORDS,
+                        "Whether to search in keywords (default: true)",
+                        false),
+                SlashCommandOption.createBooleanOption(
+                        SEARCH_IN_TITLES,
+                        "Whether to search in titles (default: true)",
+                        false),
+                SlashCommandOption.createBooleanOption(
+                        SEARCH_IN_CONTENTS,
+                        "Whether to search in content (default: false)",
+                        false));
+    }
+
     /**
-     * Executes the {@code !wiki} command.
+     * Executes the {@code /wiki} command.
      */
     @Override
-    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
-                             TextChannel channel, Parameters<String> parameters) {
-        DiscordApi api = channel.getApi();
+    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
+        SlashCommandInteraction slashCommandInteraction = commandContext.getMessage();
+        DiscordApi api = slashCommandInteraction.getApi();
+
+        CompletableFuture<InteractionOriginalResponseUpdater> responseUpdater =
+                sendResponseLater(slashCommandInteraction);
 
         try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
                     .setColor(Constants.JAVACORD_ORANGE);
 
-            switch (parameters.size()) {
-                case 0: // Just an overview
-                    embed.setTitle("Javacord Wiki")
-                            .setDescription(String.format("The [Javacord Wiki](%s/wiki) is an excellent "
-                                    + "resource to get you started with Javacord.\n", WikiParser.BASE_URL))
-                            .addInlineField("Hint", String.format(
-                                    "You can search the wiki using `%s%s %s`",
-                                    commandContext.getPrefix().orElseThrow(AssertionError::new),
-                                    commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    getUsage().orElseThrow(AssertionError::new)));
-                    break;
+            Optional<String> optionalSearchTerm = slashCommandInteraction
+                    .getOptionStringValueByName(SEARCH_TERM)
+                    .map(term -> term.toLowerCase(Locale.ROOT));
+            if (optionalSearchTerm.isEmpty()) {
+                // Just an overview
+                embed.setTitle("Javacord Wiki")
+                        .setDescription(String.format("The [Javacord Wiki](%s/wiki) is an excellent "
+                                + "resource to get you started with Javacord.\n", WikiParser.BASE_URL));
+            } else {
+                String searchTerm = optionalSearchTerm.get();
 
-                case 1:
-                    populatePages(api, embed,
-                            commandContext.getPrefix().orElseThrow(AssertionError::new),
-                            commandContext.getAlias().orElseThrow(AssertionError::new),
-                            defaultSearch(parameters
-                                    .get("search")
-                                    .orElseThrow(AssertionError::new)
-                                    .toLowerCase(Locale.ROOT)));
-                    break;
+                Predicate<WikiPage> searchCriteria = wikiPage -> false;
 
-                case 2:
-                    String searchType = parameters
-                            .getParameterNames()
-                            .stream()
-                            .filter(Predicate.not("search"::equals))
-                            .findAny()
-                            .orElseThrow(AssertionError::new);
-                    switch (searchType) {
-                        case "page":
-                        case "p":
-                        case "title":
-                        case "t":
-                            populatePages(api, embed,
-                                    commandContext.getPrefix().orElseThrow(AssertionError::new),
-                                    commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    titleOnly(parameters
-                                            .get("search")
-                                            .orElseThrow(AssertionError::new)
-                                            .toLowerCase(Locale.ROOT)));
-                            break;
+                if (slashCommandInteraction.getOptionBooleanValueByName(SEARCH_IN_KEYWORDS).orElse(Boolean.TRUE)) {
+                    searchCriteria = searchCriteria.or(keywordsOnly(searchTerm));
+                }
+                if (slashCommandInteraction.getOptionBooleanValueByName(SEARCH_IN_TITLES).orElse(Boolean.TRUE)) {
+                    searchCriteria = searchCriteria.or(titleOnly(searchTerm));
+                }
+                if (slashCommandInteraction.getOptionBooleanValueByName(SEARCH_IN_CONTENTS).orElse(Boolean.FALSE)) {
+                    searchCriteria = searchCriteria.or(contentOnly(searchTerm));
+                }
 
-                        case "full":
-                        case "f":
-                        case "content":
-                        case "c":
-                            populatePages(api, embed,
-                                    commandContext.getPrefix().orElseThrow(AssertionError::new),
-                                    commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    fullSearch(parameters
-                                            .get("search")
-                                            .orElseThrow(AssertionError::new)
-                                            .toLowerCase(Locale.ROOT)));
-                            break;
-
-                        default:
-                            throw new AssertionError(String.format("Missing case for search type '%s'", searchType));
-                    }
-                    break;
-
-                default:
-                    throw new AssertionError(String.format("Missing case for parameter count '%s'", parameters.size()));
+                populatePages(api, embed, searchCriteria);
             }
 
-            CommandCleanupListener.insertResponseTracker(embed, message.getId());
-            channel.sendMessage(embed).join();
+            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
         } catch (Throwable t) {
             logger
                     .atError()
@@ -134,18 +121,8 @@ public class WikiCommand extends BaseTextCommand {
                             "Something went wrong: ```%s```",
                             ExceptionLogger.unwrapThrowable(t).getMessage()))
                     .setColor(Constants.ERROR_COLOR);
-
-            CommandCleanupListener.insertResponseTracker(embed, message.getId());
-            channel.sendMessage(embed).join();
+            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
         }
-    }
-
-    private Predicate<WikiPage> defaultSearch(String searchString) {
-        return titleOnly(searchString).or(keywordsOnly(searchString));
-    }
-
-    private Predicate<WikiPage> fullSearch(String searchString) {
-        return defaultSearch(searchString).or(contentOnly(searchString));
     }
 
     private Predicate<WikiPage> titleOnly(String searchString) {
@@ -163,8 +140,7 @@ public class WikiCommand extends BaseTextCommand {
     }
 
 
-    private void populatePages(DiscordApi api, EmbedBuilder embed, String prefix,
-                               String alias, Predicate<WikiPage> criteria) throws IOException {
+    private void populatePages(DiscordApi api, EmbedBuilder embed, Predicate<WikiPage> criteria) throws IOException {
         List<WikiPage> pages;
 
         pages = new WikiParser(api)
@@ -176,19 +152,7 @@ public class WikiCommand extends BaseTextCommand {
         if (pages.isEmpty()) {
             embed.setTitle("Javacord Wiki");
             embed.setUrl(WikiParser.BASE_URL + "/wiki/");
-            embed.setDescription("No pages found. Maybe try another search.");
-            embed.addField(
-                    "Standard Search",
-                    String.format("Use `%s%s <search>` to search page titles and keywords.",
-                            prefix, alias));
-            embed.addField(
-                    "Title Search",
-                    String.format("Use `%s%s [page|p|title|t] <search>` to exclusively search page titles.",
-                            prefix, alias));
-            embed.addField(
-                    "Full Search",
-                    String.format("Use `%s%s [full|f|content|c] <search>` to perform a full search.",
-                            prefix, alias));
+            embed.setDescription("No pages found. Maybe try another search or tweak the search parameters.");
         } else if (pages.size() == 1) {
             WikiPage page = pages.get(0);
             displayPagePreview(embed, page);
