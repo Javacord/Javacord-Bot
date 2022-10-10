@@ -5,16 +5,16 @@ import jakarta.inject.Inject;
 import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.Description;
-import net.kautler.command.api.annotation.Usage;
-import net.kautler.command.api.parameter.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandOption;
+import org.javacord.api.interaction.SlashCommandOptionChoice;
+import org.javacord.api.interaction.SlashCommandOptionType;
+import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
@@ -22,38 +22,29 @@ import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
- * The !docs command which is used to show links to Javacord's JavaDocs.
+ * The /docs command which is used to show links to Javacord's JavaDocs.
  */
 @ApplicationScoped
 @Description("Shows a link to the JavaDoc or searches through it")
-@Usage("[[('classes' | 'class' | 'c' | 'methods' | 'method' | 'm')] [('all' | 'a')] <search...>]")
 @Asynchronous
-public class DocsCommand extends BaseTextCommand {
-    /**
-     * The parameters that indicate searching for class names only.
-     */
-    private static final Set<String> CLASS_PARAMS = new HashSet<>(Arrays.asList("classes", "class", "c"));
-
-    /**
-     * The parameters that indicate searching for method names only.
-     */
-    private static final Set<String> METHOD_PARAMS = new HashSet<>(Arrays.asList("methods", "method", "m"));
-
-    /**
-     * The parameters that indicate also searching internal packages and the core docs.
-     */
-    private static final Set<String> INCLUDE_ALL_PARAMS = new HashSet<>(Arrays.asList("all", "a"));
+public class DocsCommand extends BaseSlashCommand {
+    private static final String SEARCH_TERM = "search-term";
+    private static final String SEARCH_TYPE = "search-type";
+    private static final String SEARCH_TYPE_CLASSES = "classes";
+    private static final String SEARCH_TYPE_MEMBERS = "members";
+    private static final String INCLUDE_ALL = "include-all";
 
     @Inject
     Logger logger;
@@ -61,70 +52,75 @@ public class DocsCommand extends BaseTextCommand {
     @Inject
     LatestVersionFinder versionFinder;
 
+    @Override
+    protected List<SlashCommandOption> doGetOptions() {
+        return List.of(
+                SlashCommandOption.createStringOption(
+                        SEARCH_TERM,
+                        "The term to search for",
+                        false),
+                SlashCommandOption.createWithChoices(
+                        SlashCommandOptionType.STRING,
+                        SEARCH_TYPE,
+                        "The type of the search (default: Members)",
+                        false,
+                        List.of(
+                                SlashCommandOptionChoice.create("Classes", SEARCH_TYPE_CLASSES),
+                                SlashCommandOptionChoice.create("Members", SEARCH_TYPE_MEMBERS))),
+                SlashCommandOption.createBooleanOption(
+                        INCLUDE_ALL,
+                        "Whether to search in internal and core classes (default: false)",
+                        false));
+    }
+
     /**
-     * Executes the {@code !docs} command.
+     * Executes the {@code /docs} command.
      */
     @Override
-    protected void doExecute(CommandContext<? extends Message> commandContext, Message message,
-                             TextChannel channel, Parameters<String> parameters) {
-        DiscordApi api = channel.getApi();
+    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
+        SlashCommandInteraction slashCommandInteraction = commandContext.getMessage();
+        DiscordApi api = slashCommandInteraction.getApi();
+
+        CompletableFuture<InteractionOriginalResponseUpdater> responseUpdater =
+                sendResponseLater(slashCommandInteraction);
 
         try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
                     .setColor(Constants.JAVACORD_ORANGE);
 
-            switch (parameters.size()) {
-                case 0: // Just give an overview
-                    embed.setTitle("Javacord Docs")
-                            .addField("Overview", "https://docs.javacord.org/")
-                            .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest")
-                            .addField("Hint", String.format(
-                                    "You can search the docs using `%s%s %s`",
-                                    commandContext.getPrefix().orElseThrow(AssertionError::new),
-                                    commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    getUsage().orElseThrow(AssertionError::new)));
-                    break;
+            Optional<String> optionalSearchTerm = slashCommandInteraction
+                    .getOptionStringValueByName(SEARCH_TERM)
+                    .map(term -> term.toLowerCase(Locale.ROOT));
+            if (optionalSearchTerm.isEmpty()) {
+                // Just give an overview
+                embed.setTitle("Javacord Docs")
+                        .addField("Overview", "https://docs.javacord.org/")
+                        .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest");
+            } else {
+                String searchTerm = optionalSearchTerm.get();
+                String searchType = slashCommandInteraction
+                        .getOptionStringValueByName(SEARCH_TYPE)
+                        .orElse(SEARCH_TYPE_MEMBERS);
+                boolean includeAll = slashCommandInteraction
+                        .getOptionBooleanValueByName(INCLUDE_ALL)
+                        .orElse(Boolean.FALSE);
 
-                case 1:
-                    populateMethods(api, embed, parameters.get("search").orElseThrow(AssertionError::new), false);
-                    break;
+                switch (searchType) {
+                    case SEARCH_TYPE_MEMBERS:
+                        populateMembers(api, embed, searchTerm, includeAll);
+                        break;
 
-                case 2: {
-                    String searchString = parameters.get("search").orElseThrow(AssertionError::new);
-                    if (includeAll(parameters)) {
-                        populateMethods(api, embed, searchString, true);
-                    } else if (classSearch(parameters)) {
-                        populateClasses(api, embed, searchString, false);
-                    } else if (methodSearch(parameters)) {
-                        populateMethods(api, embed, searchString, false);
-                    } else {
-                        throw new AssertionError("Unexpected state while parameter count 2");
-                    }
-                    break;
+                    case SEARCH_TYPE_CLASSES:
+                        populateClasses(api, embed, searchTerm, includeAll);
+                        break;
+
+                    default:
+                        throw new AssertionError(String.format("Missing case for search type '%s'", searchType));
                 }
-
-                case 3: {
-                    if (!includeAll(parameters)) {
-                        throw new AssertionError("Unexpected includeAll false while parameter count 3");
-                    }
-                    String searchString = parameters.get("search").orElseThrow(AssertionError::new);
-                    if (classSearch(parameters)) {
-                        populateClasses(api, embed, searchString, true);
-                    } else if (methodSearch(parameters)) {
-                        populateMethods(api, embed, searchString, true);
-                    } else {
-                        throw new AssertionError("Unexpected state while parameter count 3");
-                    }
-                    break;
-                }
-
-                default:
-                    throw new AssertionError(String.format("Missing case for parameter count '%s'", parameters.size()));
             }
 
-            CommandCleanupListener.insertResponseTracker(embed, message.getId());
-            channel.sendMessage(embed).join();
+            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
         } catch (Throwable t) {
             logger
                     .atError()
@@ -138,31 +134,18 @@ public class DocsCommand extends BaseTextCommand {
                             ExceptionLogger.unwrapThrowable(t).getMessage()))
                     .setColor(Constants.ERROR_COLOR);
 
-            CommandCleanupListener.insertResponseTracker(embed, message.getId());
-            channel.sendMessage(embed).join();
+            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
         }
     }
 
-    private boolean classSearch(Parameters<String> parameters) {
-        return parameters.getParameterNames().stream().anyMatch(CLASS_PARAMS::contains);
-    }
-
-    private boolean methodSearch(Parameters<String> parameters) {
-        return parameters.getParameterNames().stream().anyMatch(METHOD_PARAMS::contains);
-    }
-
-    private boolean includeAll(Parameters<String> parameters) {
-        return parameters.getParameterNames().stream().anyMatch(INCLUDE_ALL_PARAMS::contains);
-    }
-
     /**
-     * Populates the methods field inside the given embed.
+     * Populates the members fields inside the given embed.
      *
      * @param api          A discord api instance.
      * @param embed        The embed to populate.
      * @param searchString A search string.
      */
-    private void populateMethods(DiscordApi api, EmbedBuilder embed, String searchString, boolean includeAll) {
+    private void populateMembers(DiscordApi api, EmbedBuilder embed, String searchString, boolean includeAll) {
         CompletableFuture<Set<JavadocMethod>> apiMethods = versionFinder.findLatestVersion()
                 .thenApply(latestVersion -> new JavadocParser(api, "api", latestVersion))
                 .thenCompose(JavadocParser::getMethods);
@@ -189,7 +172,7 @@ public class DocsCommand extends BaseTextCommand {
             return;
         }
 
-        int totalTextCount = 25; // the maximum tracker string length
+        int totalTextCount = 0;
         List<Map.Entry<String, List<JavadocMethod>>> entries = new ArrayList<>(methodsByClass.entrySet());
         entries.sort(Map.Entry.comparingByKey(String::compareToIgnoreCase));
         int classesAmount = entries.size();
@@ -305,5 +288,4 @@ public class DocsCommand extends BaseTextCommand {
 
         embed.setDescription(strBuilder.toString());
     }
-
 }
