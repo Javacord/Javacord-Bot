@@ -11,11 +11,9 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.restrictions.JavacordChannelIfOnDapiServer;
-
-import static java.lang.String.format;
-import static org.javacord.bot.Constants.ERROR_COLOR;
 
 public abstract class BaseTextCommand implements Command<Message> {
     @Inject
@@ -45,8 +43,8 @@ public abstract class BaseTextCommand implements Command<Message> {
         } catch (ParameterParseException ppe) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("Error")
-                    .setDescription(format("%s: %s", message.getAuthor().getDisplayName(), ppe.getMessage()))
-                    .setColor(ERROR_COLOR);
+                    .setDescription(String.format("%s: %s", message.getAuthor().getDisplayName(), ppe.getMessage()))
+                    .setColor(Constants.ERROR_COLOR);
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel
                     .sendMessage(embed)

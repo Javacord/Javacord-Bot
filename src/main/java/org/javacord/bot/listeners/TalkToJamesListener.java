@@ -12,14 +12,11 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.bot.Constants;
 
 import java.util.Collection;
 import java.util.List;
-
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
-import static org.javacord.bot.Constants.TALK_TO_JAMES_CHANNEL_ID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TalkToJamesListener implements MessageCreateListener {
@@ -34,20 +31,20 @@ public class TalkToJamesListener implements MessageCreateListener {
 
     private List<String> textCommandAliases;
 
-    void registerListener(@Observes @Initialized(ApplicationScoped.class) Object __) {
+    void registerListener(@Observes @Initialized(ApplicationScoped.class) Object unused) {
         textCommandAliases = textCommands
                 .stream()
                 .map(Command::getAliases)
                 .flatMap(Collection::stream)
-                .map(alias -> format("!%s", alias))
-                .collect(toList());
+                .map(alias -> String.format("!%s", alias))
+                .collect(Collectors.toList());
 
         discordApi.addMessageCreateListener(this);
     }
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (event.getChannel().getId() != TALK_TO_JAMES_CHANNEL_ID) {
+        if (event.getChannel().getId() != Constants.TALK_TO_JAMES_CHANNEL_ID) {
             return;
         }
         if (!event.getMessageAuthor().isRegularUser()) {
@@ -61,14 +58,14 @@ public class TalkToJamesListener implements MessageCreateListener {
         if (!messageIsCommand) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("Information")
-                    .setDescription("This channel is solely used to talk to me.\n" +
-                            "You can see all my commands with `!help`.")
-                    .setColor(JAVACORD_ORANGE);
+                    .setDescription("This channel is solely used to talk to me.\n"
+                            + "You can see all my commands with `!help`.")
+                    .setColor(Constants.JAVACORD_ORANGE);
             CommandCleanupListener.insertResponseTracker(embed, event.getMessageId());
             event
                     .getChannel()
                     .sendMessage(embed)
-                    .whenComplete((__, throwable) -> {
+                    .whenComplete((unused, throwable) -> {
                         if (throwable != null) {
                             logger
                                     .atError()

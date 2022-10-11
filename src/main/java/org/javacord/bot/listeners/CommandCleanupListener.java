@@ -36,7 +36,7 @@ public class CommandCleanupListener implements MessageDeleteListener {
                 + "If you delete your invocation message, this response will be deleted.");
     }
 
-    void registerListener(@Observes @Initialized(ApplicationScoped.class) Object __) {
+    void registerListener(@Observes @Initialized(ApplicationScoped.class) Object unused) {
         discordApi.addMessageDeleteListener(this);
     }
 

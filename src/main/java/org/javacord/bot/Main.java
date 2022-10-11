@@ -13,9 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
-
 @ApplicationScoped
 public class Main {
     @Produces
@@ -50,7 +47,7 @@ public class Main {
 
         SeContainerInitializer
                 .newInstance()
-                .addProperty("org.jboss.weld.construction.relaxed", FALSE)
+                .addProperty("org.jboss.weld.construction.relaxed", Boolean.FALSE)
                 .addPackages(true, Main.class)
                 .initialize();
     }
@@ -69,7 +66,7 @@ public class Main {
             }
         }
 
-        setDefaultUncaughtExceptionHandler((thread, throwable) -> LogManager
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> LogManager
                 .getLogger(throwable.getStackTrace()[0].getClassName())
                 .atError()
                 .withThrowable(throwable)

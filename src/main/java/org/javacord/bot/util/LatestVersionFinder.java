@@ -16,8 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.javacord.bot.Constants.LATEST_VERSION_URL;
-
 @ApplicationScoped
 public class LatestVersionFinder {
     @Inject
@@ -73,7 +71,7 @@ public class LatestVersionFinder {
 
     private String getAndUpdateVersionSync() {
         Request request = new Request.Builder()
-                .url(LATEST_VERSION_URL)
+                .url(Constants.LATEST_VERSION_URL)
                 .build();
         try (ResponseBody body = client.newCall(request).execute().body()) {
             if (body == null) {
