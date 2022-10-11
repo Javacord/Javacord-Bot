@@ -12,17 +12,15 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.Comparator.comparing;
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !help command which is used to list all commands.
@@ -48,24 +46,32 @@ public class HelpCommand extends BaseTextCommand {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
                     .setTitle("Commands")
-                    .setColor(JAVACORD_ORANGE);
+                    .setColor(Constants.JAVACORD_ORANGE);
 
             String prefix = commandContext.getPrefix().orElseThrow(AssertionError::new);
             textCommands
                     .stream()
-                    .sorted(comparing(command -> command.getAliases().get(0)))
+                    .sorted(Comparator.comparing(command -> command.getAliases().get(0)))
                     .forEachOrdered(command -> {
                         List<String> lines = new ArrayList<>();
                         if (command.getAliases().size() > 1) {
-                            lines.add("**Aliases: **" + command.getAliases().stream().skip(1).collect(Collectors.joining(", " + prefix, prefix, "")));
+                            lines.add(String.format(
+                                    "**Aliases:** %s",
+                                    command
+                                            .getAliases()
+                                            .stream()
+                                            .skip(1)
+                                            .collect(Collectors.joining(", " + prefix, prefix, ""))));
                         }
-                        command.getDescription().ifPresent(description -> lines.add(format("**Description:** %s", description)));
-                        command.getUsage().ifPresent(usage -> lines.add(format("**Usage:** `%s`", usage)));
+                        command
+                                .getDescription()
+                                .ifPresent(description -> lines.add(String.format("**Description:** %s", description)));
+                        command.getUsage().ifPresent(usage -> lines.add(String.format("**Usage:** `%s`", usage)));
                         String commandInfo = String.join("\n", lines);
                         if (commandInfo.isBlank()) {
                             commandInfo = "\u200B";
                         }
-                        embed.addField(format("**__%s%s__**", prefix, command.getAliases().get(0)), commandInfo);
+                        embed.addField(String.format("**__%s%s__**", prefix, command.getAliases().get(0)), commandInfo);
                     });
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());

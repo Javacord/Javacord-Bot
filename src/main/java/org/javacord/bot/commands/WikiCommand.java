@@ -13,6 +13,7 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.wiki.parser.WikiPage;
 import org.javacord.bot.util.wiki.parser.WikiParser;
@@ -21,16 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.Locale.ROOT;
-import static java.util.function.Predicate.not;
-import static org.javacord.bot.Constants.ERROR_COLOR;
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !wiki command which is used to link to Javacord's wiki.
@@ -57,14 +53,14 @@ public class WikiCommand extends BaseTextCommand {
         try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
-                    .setColor(JAVACORD_ORANGE);
+                    .setColor(Constants.JAVACORD_ORANGE);
 
             switch (parameters.size()) {
                 case 0: // Just an overview
                     embed.setTitle("Javacord Wiki")
-                            .setDescription(format("The [Javacord Wiki](%s/wiki) is an excellent "
+                            .setDescription(String.format("The [Javacord Wiki](%s/wiki) is an excellent "
                                     + "resource to get you started with Javacord.\n", WikiParser.BASE_URL))
-                            .addInlineField("Hint", format(
+                            .addInlineField("Hint", String.format(
                                     "You can search the wiki using `%s%s %s`",
                                     commandContext.getPrefix().orElseThrow(AssertionError::new),
                                     commandContext.getAlias().orElseThrow(AssertionError::new),
@@ -75,14 +71,17 @@ public class WikiCommand extends BaseTextCommand {
                     populatePages(api, embed,
                             commandContext.getPrefix().orElseThrow(AssertionError::new),
                             commandContext.getAlias().orElseThrow(AssertionError::new),
-                            defaultSearch(parameters.get("search").orElseThrow(AssertionError::new).toLowerCase(ROOT)));
+                            defaultSearch(parameters
+                                    .get("search")
+                                    .orElseThrow(AssertionError::new)
+                                    .toLowerCase(Locale.ROOT)));
                     break;
 
                 case 2:
                     String searchType = parameters
                             .getParameterNames()
                             .stream()
-                            .filter(not("search"::equals))
+                            .filter(Predicate.not("search"::equals))
                             .findAny()
                             .orElseThrow(AssertionError::new);
                     switch (searchType) {
@@ -93,7 +92,10 @@ public class WikiCommand extends BaseTextCommand {
                             populatePages(api, embed,
                                     commandContext.getPrefix().orElseThrow(AssertionError::new),
                                     commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    titleOnly(parameters.get("search").orElseThrow(AssertionError::new).toLowerCase(ROOT)));
+                                    titleOnly(parameters
+                                            .get("search")
+                                            .orElseThrow(AssertionError::new)
+                                            .toLowerCase(Locale.ROOT)));
                             break;
 
                         case "full":
@@ -103,16 +105,19 @@ public class WikiCommand extends BaseTextCommand {
                             populatePages(api, embed,
                                     commandContext.getPrefix().orElseThrow(AssertionError::new),
                                     commandContext.getAlias().orElseThrow(AssertionError::new),
-                                    fullSearch(parameters.get("search").orElseThrow(AssertionError::new).toLowerCase(ROOT)));
+                                    fullSearch(parameters
+                                            .get("search")
+                                            .orElseThrow(AssertionError::new)
+                                            .toLowerCase(Locale.ROOT)));
                             break;
 
                         default:
-                            throw new AssertionError(format("Missing case for search type '%s'", searchType));
+                            throw new AssertionError(String.format("Missing case for search type '%s'", searchType));
                     }
                     break;
 
                 default:
-                    throw new AssertionError(format("Missing case for parameter count '%s'", parameters.size()));
+                    throw new AssertionError(String.format("Missing case for parameter count '%s'", parameters.size()));
             }
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
@@ -125,10 +130,10 @@ public class WikiCommand extends BaseTextCommand {
 
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("Error")
-                    .setDescription(format(
+                    .setDescription(String.format(
                             "Something went wrong: ```%s```",
                             ExceptionLogger.unwrapThrowable(t).getMessage()))
-                    .setColor(ERROR_COLOR);
+                    .setColor(Constants.ERROR_COLOR);
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
@@ -158,7 +163,8 @@ public class WikiCommand extends BaseTextCommand {
     }
 
 
-    private void populatePages(DiscordApi api, EmbedBuilder embed, String prefix, String alias, Predicate<WikiPage> criteria) throws IOException {
+    private void populatePages(DiscordApi api, EmbedBuilder embed, String prefix,
+                               String alias, Predicate<WikiPage> criteria) throws IOException {
         List<WikiPage> pages;
 
         pages = new WikiParser(api)
@@ -171,9 +177,18 @@ public class WikiCommand extends BaseTextCommand {
             embed.setTitle("Javacord Wiki");
             embed.setUrl(WikiParser.BASE_URL + "/wiki/");
             embed.setDescription("No pages found. Maybe try another search.");
-            embed.addField("Standard Search", format("Use `%s%s <search>` to search page titles and keywords.", prefix, alias));
-            embed.addField("Title Search", format("Use `%s%s [page|p|title|t] <search>` to exclusively search page titles.", prefix, alias));
-            embed.addField("Full Search", format("Use `%s%s [full|f|content|c] <search>` to perform a full search.", prefix, alias));
+            embed.addField(
+                    "Standard Search",
+                    String.format("Use `%s%s <search>` to search page titles and keywords.",
+                            prefix, alias));
+            embed.addField(
+                    "Title Search",
+                    String.format("Use `%s%s [page|p|title|t] <search>` to exclusively search page titles.",
+                            prefix, alias));
+            embed.addField(
+                    "Full Search",
+                    String.format("Use `%s%s [full|f|content|c] <search>` to perform a full search.",
+                            prefix, alias));
         } else if (pages.size() == 1) {
             WikiPage page = pages.get(0);
             displayPagePreview(embed, page);
@@ -194,7 +209,7 @@ public class WikiCommand extends BaseTextCommand {
         }
         length = Math.min(length, 1500);
         StringBuilder description = new StringBuilder()
-                .append(format("**[%s](%s)**\n\n", page.getTitle(), WikiParser.BASE_URL + page.getPath()))
+                .append(String.format("**[%s](%s)**\n\n", page.getTitle(), WikiParser.BASE_URL + page.getPath()))
                 .append(cleanedDescription, 0, length);
         if (length < cleanedDescription.length()) {
             description

@@ -12,10 +12,8 @@ import org.javacord.api.Javacord;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
-
-import static java.lang.String.format;
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 @ApplicationScoped
 @Description("Shows information about this bot")
@@ -33,16 +31,16 @@ public class InfoCommand extends BaseTextCommand {
         DiscordApi api = channel.getApi();
 
         EmbedBuilder embed = new EmbedBuilder()
-                .setColor(JAVACORD_ORANGE)
+                .setColor(Constants.JAVACORD_ORANGE)
                 .setTitle(api.getYourself().getName() + " - Official Javacord Bot")
                 .setThumbnail(api.getYourself().getAvatar())
                 .setDescription("The official bot for the Javacord Server\n\n"
                         + "Powered by Javacord and command-framework")
                 .addInlineField("GitHub", "https://github.com/Javacord/Javacord-Bot")
-                .addInlineField("Javacord Version", format(
+                .addInlineField("Javacord Version", String.format(
                         "[%s](https://github.com/Javacord/Javacord/releases/tag/v%s)",
                         Javacord.DISPLAY_VERSION, Javacord.VERSION))
-                .addInlineField("command-framework Version", format(
+                .addInlineField("command-framework Version", String.format(
                         "[%s](https://github.com/Vampire/command-framework/releases/tag/v%s)",
                         commandFrameworkVersion.getDisplayVersion(), commandFrameworkVersion.getVersion()));
 

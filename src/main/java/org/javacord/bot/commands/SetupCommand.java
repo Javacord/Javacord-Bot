@@ -9,10 +9,9 @@ import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
-
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !setup command which is used to get information useful for first setup.
@@ -32,7 +31,7 @@ public class SetupCommand extends BaseTextCommand {
                              TextChannel channel, Parameters<String> parameters) {
         String latestVersion = versionFinder.findLatestVersion().join();
         EmbedBuilder embed = new EmbedBuilder()
-                .setColor(JAVACORD_ORANGE)
+                .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Gradle Dependency",
                         "```groovy\n"
                                 + "repositories { \n"

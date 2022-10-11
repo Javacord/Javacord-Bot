@@ -13,6 +13,7 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.util.LatestVersionFinder;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
@@ -30,10 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static org.javacord.bot.Constants.ERROR_COLOR;
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !docs command which is used to show links to Javacord's JavaDocs.
@@ -75,14 +72,14 @@ public class DocsCommand extends BaseTextCommand {
         try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setThumbnail(javacord3Icon)
-                    .setColor(JAVACORD_ORANGE);
+                    .setColor(Constants.JAVACORD_ORANGE);
 
             switch (parameters.size()) {
                 case 0: // Just give an overview
                     embed.setTitle("Javacord Docs")
                             .addField("Overview", "https://docs.javacord.org/")
                             .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest")
-                            .addField("Hint", format(
+                            .addField("Hint", String.format(
                                     "You can search the docs using `%s%s %s`",
                                     commandContext.getPrefix().orElseThrow(AssertionError::new),
                                     commandContext.getAlias().orElseThrow(AssertionError::new),
@@ -123,7 +120,7 @@ public class DocsCommand extends BaseTextCommand {
                 }
 
                 default:
-                    throw new AssertionError(format("Missing case for parameter count '%s'", parameters.size()));
+                    throw new AssertionError(String.format("Missing case for parameter count '%s'", parameters.size()));
             }
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
@@ -136,10 +133,10 @@ public class DocsCommand extends BaseTextCommand {
 
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("Error")
-                    .setDescription(format(
+                    .setDescription(String.format(
                             "Something went wrong: ```%s```",
                             ExceptionLogger.unwrapThrowable(t).getMessage()))
-                    .setColor(ERROR_COLOR);
+                    .setColor(Constants.ERROR_COLOR);
 
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();

@@ -11,12 +11,11 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.javacord.bot.Constants.JAVACORD_ORANGE;
 
 /**
  * The !github command which is used to link to Javacord related GitHub repositories.
@@ -41,7 +40,7 @@ public class GitHubCommand extends BaseTextCommand {
                     .addField("Example Bot", "https://github.com/Javacord/Example-Bot")
                     .addField("James", "https://github.com/Javacord/Javacord-Bot")
                     .setThumbnail(javacord3Icon)
-                    .setColor(JAVACORD_ORANGE);
+                    .setColor(Constants.JAVACORD_ORANGE);
             CommandCleanupListener.insertResponseTracker(embed, message.getId());
             channel.sendMessage(embed).join();
         } catch (IOException e) {
