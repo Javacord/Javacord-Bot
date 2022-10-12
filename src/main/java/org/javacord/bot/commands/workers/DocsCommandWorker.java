@@ -1,50 +1,38 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.workers;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.kautler.command.api.CommandContext;
-import net.kautler.command.api.annotation.Asynchronous;
-import net.kautler.command.api.annotation.Description;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.interaction.SlashCommandInteraction;
-import org.javacord.api.interaction.SlashCommandOption;
-import org.javacord.api.interaction.SlashCommandOptionChoice;
-import org.javacord.api.interaction.SlashCommandOptionType;
-import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.javacord.bot.Constants;
+import org.javacord.bot.util.JavacordIconProvider;
 import org.javacord.bot.util.LatestVersionFinder;
 import org.javacord.bot.util.javadoc.parser.JavadocClass;
 import org.javacord.bot.util.javadoc.parser.JavadocMethod;
 import org.javacord.bot.util.javadoc.parser.JavadocParser;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
- * The /docs command which is used to show links to Javacord's JavaDocs.
+ * The docs command worker which is used to show links to Javacord's JavaDocs.
  */
 @ApplicationScoped
-@Description("Shows a link to the JavaDoc or searches through it")
-@Asynchronous
-public class DocsCommand extends BaseSlashCommand {
-    private static final String SEARCH_TERM = "search-term";
-    private static final String SEARCH_TYPE = "search-type";
-    private static final String SEARCH_TYPE_CLASSES = "classes";
-    private static final String SEARCH_TYPE_MEMBERS = "members";
-    private static final String INCLUDE_ALL = "include-all";
+public class DocsCommandWorker {
+    public static final String SEARCH_TYPE_CLASSES = "classes";
+    public static final String SEARCH_TYPE_MEMBERS = "members";
+
+    @Inject
+    DiscordApi api;
 
     @Inject
     Logger logger;
@@ -52,90 +40,54 @@ public class DocsCommand extends BaseSlashCommand {
     @Inject
     LatestVersionFinder versionFinder;
 
-    @Override
-    protected List<SlashCommandOption> doGetOptions() {
-        return List.of(
-                SlashCommandOption.createStringOption(
-                        SEARCH_TERM,
-                        "The term to search for",
-                        false),
-                SlashCommandOption.createWithChoices(
-                        SlashCommandOptionType.STRING,
-                        SEARCH_TYPE,
-                        "The type of the search (default: Members)",
-                        false,
-                        List.of(
-                                SlashCommandOptionChoice.create("Classes", SEARCH_TYPE_CLASSES),
-                                SlashCommandOptionChoice.create("Members", SEARCH_TYPE_MEMBERS))),
-                SlashCommandOption.createBooleanOption(
-                        INCLUDE_ALL,
-                        "Whether to search in internal and core classes (default: false)",
-                        false));
-    }
+    @Inject
+    JavacordIconProvider iconProvider;
 
     /**
-     * Executes the {@code /docs} command.
+     * Executes the {@code docs} commands.
      */
-    @Override
-    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
-        SlashCommandInteraction slashCommandInteraction = commandContext.getMessage();
-        DiscordApi api = slashCommandInteraction.getApi();
+    public CompletableFuture<EmbedBuilder> execute(String searchTerm, String searchType, boolean includeAll) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                EmbedBuilder embed = new EmbedBuilder()
+                        .setThumbnail(iconProvider.getIcon())
+                        .setColor(Constants.JAVACORD_ORANGE);
 
-        CompletableFuture<InteractionOriginalResponseUpdater> responseUpdater =
-                sendResponseLater(slashCommandInteraction);
+                if (searchTerm == null) {
+                    // Just give an overview
+                    embed.setTitle("Javacord Docs")
+                            .addField("Overview", "https://docs.javacord.org/")
+                            .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest");
+                } else {
+                    switch (searchType) {
+                        case SEARCH_TYPE_MEMBERS:
+                            populateMembers(api, embed, searchTerm, includeAll);
+                            break;
 
-        try (InputStream javacord3Icon = getClass().getResourceAsStream("/javacord3_icon.png")) {
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setThumbnail(javacord3Icon)
-                    .setColor(Constants.JAVACORD_ORANGE);
+                        case SEARCH_TYPE_CLASSES:
+                            populateClasses(api, embed, searchTerm, includeAll);
+                            break;
 
-            Optional<String> optionalSearchTerm = slashCommandInteraction
-                    .getOptionStringValueByName(SEARCH_TERM)
-                    .map(term -> term.toLowerCase(Locale.ROOT));
-            if (optionalSearchTerm.isEmpty()) {
-                // Just give an overview
-                embed.setTitle("Javacord Docs")
-                        .addField("Overview", "https://docs.javacord.org/")
-                        .addField("Latest release version JavaDoc", "https://docs.javacord.org/api/v/latest");
-            } else {
-                String searchTerm = optionalSearchTerm.get();
-                String searchType = slashCommandInteraction
-                        .getOptionStringValueByName(SEARCH_TYPE)
-                        .orElse(SEARCH_TYPE_MEMBERS);
-                boolean includeAll = slashCommandInteraction
-                        .getOptionBooleanValueByName(INCLUDE_ALL)
-                        .orElse(Boolean.FALSE);
-
-                switch (searchType) {
-                    case SEARCH_TYPE_MEMBERS:
-                        populateMembers(api, embed, searchTerm, includeAll);
-                        break;
-
-                    case SEARCH_TYPE_CLASSES:
-                        populateClasses(api, embed, searchTerm, includeAll);
-                        break;
-
-                    default:
-                        throw new AssertionError(String.format("Missing case for search type '%s'", searchType));
+                        default:
+                            throw new AssertionError(String.format("Missing case for search type '%s'", searchType));
+                    }
                 }
+
+                return embed;
+            } catch (Throwable t) {
+                logger
+                        .atError()
+                        .withThrowable(t)
+                        .log("Exception while handling docs command");
+
+                return new EmbedBuilder()
+                        .setTitle("Error")
+                        .setDescription(String.format(
+                                "Something went wrong: ```%s```",
+                                ExceptionLogger.unwrapThrowable(t).getMessage()))
+                        .setColor(Constants.ERROR_COLOR);
             }
-
-            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
-        } catch (Throwable t) {
-            logger
-                    .atError()
-                    .withThrowable(t)
-                    .log("Exception while handling docs command");
-
-            EmbedBuilder embed = new EmbedBuilder()
-                    .setTitle("Error")
-                    .setDescription(String.format(
-                            "Something went wrong: ```%s```",
-                            ExceptionLogger.unwrapThrowable(t).getMessage()))
-                    .setColor(Constants.ERROR_COLOR);
-
-            responseUpdater.thenCompose(updater -> updater.addEmbed(embed).update()).join();
-        }
+        }, api.getThreadPool().getExecutorService());
     }
 
     /**

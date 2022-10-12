@@ -1,32 +1,25 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.workers;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.kautler.command.api.CommandContext;
-import net.kautler.command.api.annotation.Asynchronous;
-import net.kautler.command.api.annotation.Description;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The /maven command which is used to get information about Javacord with Maven.
+ * The maven command worker which is used to get information about Javacord with Maven.
  */
 @ApplicationScoped
-@Description("Shows the Maven dependency")
-@Asynchronous
-public class MavenCommand extends BaseSlashCommand {
+public class MavenCommandWorker {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code /maven} command.
+     * Executes the {@code maven} commands.
      */
-    @Override
-    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
+    public EmbedBuilder execute() {
         String latestVersion = versionFinder.findLatestVersion().join();
-        EmbedBuilder embed = new EmbedBuilder()
+        return new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Dependency",
                         "```xml\n"
@@ -40,6 +33,5 @@ public class MavenCommand extends BaseSlashCommand {
                 .addField("Setup Guides",
                         "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-maven/)\n"
                                 + "• [Eclipse](https://javacord.org/wiki/getting-started/eclipse-maven/)");
-        sendResponse(commandContext.getMessage(), embed).join();
     }
 }
