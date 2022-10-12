@@ -1,4 +1,4 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.migrated;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -7,36 +7,30 @@ import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.annotation.Alias;
 import net.kautler.command.api.annotation.Asynchronous;
 import net.kautler.command.api.annotation.RestrictedTo;
-import net.kautler.command.api.annotation.RestrictionPolicy;
-import net.kautler.command.api.annotation.RestrictionPolicy.Policy;
-import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.bot.Constants;
 import org.javacord.bot.listeners.CommandCleanupListener;
 import org.javacord.bot.restrictions.Before2023;
-import org.javacord.bot.restrictions.JavacordChannelIfOnDapiServer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Comparator;
 
 @ApplicationScoped
-@Alias("docs")
-@Alias("example")
-@Alias("github")
-@Alias("gradle")
-@Alias("info")
-@Alias("help")
-@Alias("invite")
-@Alias("maven")
-@Alias("sdcf4j")
-@Alias("setup")
-@Alias("wiki")
-@RestrictedTo(JavacordChannelIfOnDapiServer.class)
+@Alias("migrated/docs")
+@Alias("migrated/example")
+@Alias("migrated/github")
+@Alias("migrated/gradle")
+@Alias("migrated/info")
+@Alias("migrated/help")
+@Alias("migrated/invite")
+@Alias("migrated/maven")
+@Alias("migrated/sdcf4j")
+@Alias("migrated/setup")
+@Alias("migrated/wiki")
 @RestrictedTo(Before2023.class)
-@RestrictionPolicy(Policy.ALL_OF)
 @Asynchronous
 //TODO: After 2022 delete this class, command cleanup listener and restriction classes
 public class MigratedToSlashCommandsNotifier implements Command<Message> {
