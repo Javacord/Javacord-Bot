@@ -1,32 +1,25 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.workers;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.kautler.command.api.CommandContext;
-import net.kautler.command.api.annotation.Asynchronous;
-import net.kautler.command.api.annotation.Description;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The /setup command which is used to get information useful for first setup.
+ * The setup commands worker which is used to get information useful for first setup.
  */
 @ApplicationScoped
-@Description("Shows useful information to setup a Javacord bot")
-@Asynchronous
-public class SetupCommand extends BaseSlashCommand {
+public class SetupCommandWorker {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code /setup} command.
+     * Executes the {@code setup} commands.
      */
-    @Override
-    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
+    public EmbedBuilder execute() {
         String latestVersion = versionFinder.findLatestVersion().join();
-        EmbedBuilder embed = new EmbedBuilder()
+        return new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Gradle Dependency",
                         "```groovy\n"
@@ -50,6 +43,5 @@ public class SetupCommand extends BaseSlashCommand {
                         "• [IntelliJ + Gradle](https://javacord.org/wiki/getting-started/intellij-gradle/) (recommended)\n"
                                 + "• [IntelliJ + Maven](https://javacord.org/wiki/getting-started/intellij-maven/)\n"
                                 + "• [Eclipse + Maven](https://javacord.org/wiki/getting-started/eclipse-maven/)");
-        sendResponse(commandContext.getMessage(), embed).join();
     }
 }

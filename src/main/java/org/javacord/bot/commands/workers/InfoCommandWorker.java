@@ -1,32 +1,29 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.workers;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.kautler.command.api.CommandContext;
 import net.kautler.command.api.Version;
-import net.kautler.command.api.annotation.Asynchronous;
-import net.kautler.command.api.annotation.Description;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.Javacord;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
 
 @ApplicationScoped
-@Description("Shows information about this bot")
-@Asynchronous
-public class InfoCommand extends BaseSlashCommand {
+public class InfoCommandWorker {
+    @Inject
+    DiscordApi api;
+
     @Inject
     Version commandFrameworkVersion;
 
     /**
-     * Executes the {@code /info} command.
+     * Executes the {@code info} commands.
      */
-    @Override
-    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
-        User yourself = commandContext.getMessage().getApi().getYourself();
+    public EmbedBuilder execute() {
+        User yourself = api.getYourself();
 
-        EmbedBuilder embed = new EmbedBuilder()
+        return new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .setTitle(yourself.getName() + " - Official Javacord Bot")
                 .setThumbnail(yourself.getAvatar())
@@ -39,6 +36,5 @@ public class InfoCommand extends BaseSlashCommand {
                 .addInlineField("command-framework Version", String.format(
                         "[%s](https://github.com/Vampire/command-framework/releases/tag/v%s)",
                         commandFrameworkVersion.getDisplayVersion(), commandFrameworkVersion.getVersion()));
-        sendResponse(commandContext.getMessage(), embed).join();
     }
 }

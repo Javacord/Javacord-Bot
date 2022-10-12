@@ -1,4 +1,4 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.slash;
 
 import net.kautler.command.api.slash.javacord.SlashCommandJavacord;
 import org.javacord.api.entity.message.MessageFlag;
@@ -11,9 +11,24 @@ import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public abstract class BaseSlashCommand implements SlashCommandJavacord {
-    public static final String SHOW_TO_EVERYONE = "show-to-everyone";
+    private static final String SLASH_SUFFIX = "Slash";
+    private static final int SLASH_SUFFIX_LENGTH = SLASH_SUFFIX.length();
+    private static final String SHOW_TO_EVERYONE = "show-to-everyone";
+
+    @Override
+    public List<String> getAliases() {
+        return SlashCommandJavacord
+                .super
+                .getAliases()
+                .stream()
+                .map(alias -> alias.endsWith(SLASH_SUFFIX)
+                        ? alias.substring(0, alias.length() - SLASH_SUFFIX_LENGTH)
+                        : alias)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public final List<SlashCommandOption> getOptions() {

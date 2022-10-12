@@ -1,32 +1,25 @@
-package org.javacord.bot.commands;
+package org.javacord.bot.commands.workers;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import net.kautler.command.api.CommandContext;
-import net.kautler.command.api.annotation.Asynchronous;
-import net.kautler.command.api.annotation.Description;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.bot.Constants;
 import org.javacord.bot.util.LatestVersionFinder;
 
 /**
- * The /gradle command which is used to get information about Javacord with Gradle.
+ * The gradle command worker which is used to get information about Javacord with Gradle.
  */
 @ApplicationScoped
-@Description("Shows the Gradle dependency")
-@Asynchronous
-public class GradleCommand extends BaseSlashCommand {
+public class GradleCommandWorker {
     @Inject
     LatestVersionFinder versionFinder;
 
     /**
-     * Executes the {@code /gradle} command.
+     * Executes the {@code gradle} commands.
      */
-    @Override
-    public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
+    public EmbedBuilder execute() {
         String latestVersion = versionFinder.findLatestVersion().join();
-        EmbedBuilder embed = new EmbedBuilder()
+        return new EmbedBuilder()
                 .setColor(Constants.JAVACORD_ORANGE)
                 .addField("Dependency",
                         "```groovy\n"
@@ -38,6 +31,5 @@ public class GradleCommand extends BaseSlashCommand {
                                 + "}\n"
                                 + "```")
                 .addField("Setup Guide", "• [IntelliJ](https://javacord.org/wiki/getting-started/intellij-gradle/)");
-        sendResponse(commandContext.getMessage(), embed).join();
     }
 }
