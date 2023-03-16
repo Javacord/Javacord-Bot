@@ -12,6 +12,7 @@ import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.component.HighLevelComponent;
 import org.javacord.api.entity.message.component.SelectMenu;
 import org.javacord.api.entity.message.embed.Embed;
+import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.event.interaction.SelectMenuChooseEvent;
@@ -64,7 +65,7 @@ public class PublishResponseListener implements ButtonClickListener, SelectMenuC
             return;
         }
 
-        publishResponse(interaction, interaction.createFollowupMessageBuilder());
+        publishResponse(interaction, interaction.createFollowupMessageBuilder(), null);
     }
 
     @Override
@@ -74,19 +75,25 @@ public class PublishResponseListener implements ButtonClickListener, SelectMenuC
             return;
         }
 
-        InteractionFollowupMessageBuilder responder = interaction.createFollowupMessageBuilder();
-        User mentionUser = interaction.getSelectedUsers().get(0);
-        responder.setContent(mentionUser.getMentionTag());
-        publishResponse(interaction, responder);
+        publishResponse(interaction, interaction.createFollowupMessageBuilder(), interaction.getSelectedUsers().get(0));
     }
 
-    private void publishResponse(MessageComponentInteractionBase interaction, InteractionFollowupMessageBuilder responder) {
+    private void publishResponse(MessageComponentInteractionBase interaction, InteractionFollowupMessageBuilder responder, User mentionUser) {
         removePublishButtons(interaction);
-        responder
-                .getStringBuilder()
-                .append("\n")
+        StringBuilder contentBuilder = responder.getStringBuilder();
+        AllowedMentionsBuilder allowedMentions = new AllowedMentionsBuilder();
+        if (mentionUser != null) {
+            contentBuilder
+                    .append(mentionUser.getMentionTag())
+                    .append("\n");
+            allowedMentions.addUser(mentionUser.getId());
+        }
+        contentBuilder
+                .append(interaction.getUser().getMentionTag())
+                .append(" used: ")
                 .append(CODE_SIMPLE.applyToText(extractHiddenCommandString(interaction)));
         responder
+                .setAllowedMentions(allowedMentions.build())
                 .addEmbeds(interaction
                         .getMessage()
                         .getEmbeds()
