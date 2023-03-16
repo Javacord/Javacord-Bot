@@ -30,7 +30,7 @@ public class WikiSlashCommand extends BaseSlashCommand {
     WikiCommandWorker worker;
 
     @Override
-    protected List<SlashCommandOption> doGetOptions() {
+    public List<SlashCommandOption> getOptions() {
         return List.of(
                 SlashCommandOption.createStringOption(
                         SEARCH_TERM,
@@ -55,9 +55,9 @@ public class WikiSlashCommand extends BaseSlashCommand {
      */
     @Override
     public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
-        SlashCommandInteraction slashCommandInteraction = commandContext.getMessage();
         CompletableFuture<InteractionOriginalResponseUpdater> responseUpdater =
-                sendResponseLater(slashCommandInteraction);
+                sendResponseLater(commandContext);
+        SlashCommandInteraction slashCommandInteraction = commandContext.getMessage();
 
         String searchTerm = slashCommandInteraction
                 .getArgumentStringValueByName(SEARCH_TERM)
