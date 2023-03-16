@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.interaction.SlashCommandBuilder;
 
+import java.util.HashSet;
 import java.util.List;
 
 @ApplicationScoped
@@ -23,7 +24,7 @@ public class SlashCommandRegisterer {
 
     void registerSlashCommands(@Observes @Initialized(ApplicationScoped.class) Object unused) {
         discordApi
-                .bulkOverwriteGlobalApplicationCommands(slashCommandBuilders)
+                .bulkOverwriteGlobalApplicationCommands(new HashSet<>(slashCommandBuilders))
                 .whenComplete((__, throwable) -> {
                     if (throwable != null) {
                         logger
