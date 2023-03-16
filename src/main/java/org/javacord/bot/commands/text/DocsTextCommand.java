@@ -9,7 +9,7 @@ import net.kautler.command.api.annotation.Usage;
 import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.message.Message;
 import org.javacord.bot.commands.workers.DocsCommandWorker;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 
 import java.util.Set;
 
@@ -91,7 +91,7 @@ public class DocsTextCommand extends BaseTextCommand {
         worker
                 .execute(searchTerm, searchType, includeAll)
                 .thenCompose(embed -> {
-                    CommandCleanupListener.insertResponseTracker(embed, message.getId());
+                    TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
                     return message.reply(embed);
                 })
                 .join();

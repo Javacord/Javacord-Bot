@@ -37,6 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.javacord.api.entity.message.MessageDecoration.CODE_SIMPLE;
+import static org.javacord.bot.listeners.SlashCommandCleanupListener.WASTEBASKET;
 
 /**
  * A listener to publish our response to a user command if the users presses a button component.
@@ -93,6 +94,7 @@ public class PublishResponseListener implements ButtonClickListener, SelectMenuC
                         .map(Embed::toBuilder)
                         .collect(toList()))
                 .send()
+                .thenCompose(message -> message.addReaction(WASTEBASKET))
                 .whenComplete((__, throwable) -> {
                     if (throwable != null) {
                         logger

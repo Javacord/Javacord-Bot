@@ -9,7 +9,7 @@ import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.commands.workers.ExampleCommandWorker;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 
 /**
  * The !example command which is used to get a link to the example bot.
@@ -28,7 +28,7 @@ public class ExampleTextCommand extends BaseTextCommand {
     protected void doExecute(CommandContext<? extends Message> commandContext,
                              Message message, Parameters<String> parameters) {
         EmbedBuilder embed = worker.execute();
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
+        TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
         message.reply(embed).join();
     }
 }

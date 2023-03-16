@@ -11,7 +11,7 @@ import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 import org.javacord.bot.util.JavacordIconProvider;
 
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class HelpTextCommand extends BaseTextCommand {
                     embed.addField(String.format("**__%s%s__**", prefix, command.getAliases().get(0)), commandInfo);
                 });
 
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
+        TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
         message.reply(embed).join();
     }
 }

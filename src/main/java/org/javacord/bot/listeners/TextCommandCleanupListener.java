@@ -17,10 +17,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
 /**
- * A listener to clean up our responses to user commands if the command was deleted.
+ * A listener to clean up our responses to text user commands if the command was deleted.
  */
 @ApplicationScoped
-public class CommandCleanupListener implements MessageDeleteListener {
+public class TextCommandCleanupListener implements MessageDeleteListener {
     @Inject
     DiscordApi discordApi;
 

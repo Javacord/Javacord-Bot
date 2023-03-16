@@ -9,7 +9,7 @@ import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.commands.workers.SetupCommandWorker;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 
 /**
  * The !setup command which is used to get information useful for first setup.
@@ -28,7 +28,7 @@ public class SetupTextCommand extends BaseTextCommand {
     protected void doExecute(CommandContext<? extends Message> commandContext,
                              Message message, Parameters<String> parameters) {
         EmbedBuilder embed = worker.execute();
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
+        TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
         message.reply(embed).join();
     }
 }

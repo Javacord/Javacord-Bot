@@ -11,7 +11,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.bot.Constants;
 import org.javacord.bot.commands.text.HiddenTextCommand;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 import org.javacord.bot.restrictions.Before2023;
 import org.javacord.bot.util.JavacordIconProvider;
 
@@ -58,7 +58,7 @@ public class MigratedToSlashCommandsNotifier implements HiddenTextCommand {
                         ))
                 .join();
 
-        CommandCleanupListener.insertResponseTracker(embed, message.getId());
+        TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
         message.reply(embed).join();
     }
 }

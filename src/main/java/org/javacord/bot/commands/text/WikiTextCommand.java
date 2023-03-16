@@ -9,7 +9,7 @@ import net.kautler.command.api.annotation.Usage;
 import net.kautler.command.api.parameter.Parameters;
 import org.javacord.api.entity.message.Message;
 import org.javacord.bot.commands.workers.WikiCommandWorker;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 
 import java.util.function.Predicate;
 
@@ -80,7 +80,7 @@ public class WikiTextCommand extends BaseTextCommand {
         worker
                 .execute(searchTerm, searchInKeywords, searchInTitles, searchInContents)
                 .thenCompose(embed -> {
-                    CommandCleanupListener.insertResponseTracker(embed, message.getId());
+                    TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
                     return message.reply(embed);
                 })
                 .join();

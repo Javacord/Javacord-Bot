@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.bot.Constants;
-import org.javacord.bot.listeners.CommandCleanupListener;
+import org.javacord.bot.listeners.TextCommandCleanupListener;
 import org.javacord.bot.restrictions.JavacordChannelOnDapiServer;
 
 import java.util.List;
@@ -60,7 +60,7 @@ public abstract class BaseTextCommand implements Command<Message> {
                     .setTitle("Error")
                     .setDescription(String.format("%s: %s", message.getAuthor().getDisplayName(), ppe.getMessage()))
                     .setColor(Constants.ERROR_COLOR);
-            CommandCleanupListener.insertResponseTracker(embed, message.getId());
+            TextCommandCleanupListener.insertResponseTracker(embed, message.getId());
             message
                     .reply(embed)
                     .whenComplete((__, throwable) -> {
