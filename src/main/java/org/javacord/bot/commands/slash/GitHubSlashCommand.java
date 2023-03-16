@@ -25,6 +25,6 @@ public class GitHubSlashCommand extends BaseSlashCommand {
      */
     @Override
     public void execute(CommandContext<? extends SlashCommandInteraction> commandContext) {
-        sendResponse(commandContext.getMessage(), worker.execute()).join();
+        sendResponse(commandContext, worker.execute()).join();
     }
 }
