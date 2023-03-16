@@ -44,7 +44,7 @@ public abstract class BaseSlashCommand implements SlashCommandJavacord {
     protected CompletableFuture<InteractionOriginalResponseUpdater> sendResponse(
             SlashCommandInteraction slashCommandInteraction, EmbedBuilder embed) {
         InteractionImmediateResponseBuilder responder = slashCommandInteraction.createImmediateResponder();
-        if (!slashCommandInteraction.getOptionBooleanValueByName(SHOW_TO_EVERYONE).orElse(Boolean.FALSE)) {
+        if (!slashCommandInteraction.getArgumentBooleanValueByName(SHOW_TO_EVERYONE).orElse(Boolean.FALSE)) {
             responder.setFlags(MessageFlag.EPHEMERAL);
         }
         responder.addEmbed(embed);
@@ -54,6 +54,6 @@ public abstract class BaseSlashCommand implements SlashCommandJavacord {
     protected CompletableFuture<InteractionOriginalResponseUpdater> sendResponseLater(
             SlashCommandInteraction slashCommandInteraction) {
         return slashCommandInteraction.respondLater(
-                !slashCommandInteraction.getOptionBooleanValueByName(SHOW_TO_EVERYONE).orElse(Boolean.FALSE));
+                !slashCommandInteraction.getArgumentBooleanValueByName(SHOW_TO_EVERYONE).orElse(Boolean.FALSE));
     }
 }

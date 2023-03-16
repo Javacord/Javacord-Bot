@@ -60,16 +60,16 @@ public class WikiSlashCommand extends BaseSlashCommand {
                 sendResponseLater(slashCommandInteraction);
 
         String searchTerm = slashCommandInteraction
-                .getOptionStringValueByName(SEARCH_TERM)
+                .getArgumentStringValueByName(SEARCH_TERM)
                 .orElse(null);
         boolean searchInKeywords = slashCommandInteraction
-                .getOptionBooleanValueByName(SEARCH_IN_KEYWORDS)
+                .getArgumentBooleanValueByName(SEARCH_IN_KEYWORDS)
                 .orElse(Boolean.TRUE);
         boolean searchInTitles = slashCommandInteraction
-                .getOptionBooleanValueByName(SEARCH_IN_TITLES)
+                .getArgumentBooleanValueByName(SEARCH_IN_TITLES)
                 .orElse(Boolean.TRUE);
         boolean searchInContents = slashCommandInteraction
-                .getOptionBooleanValueByName(SEARCH_IN_CONTENTS)
+                .getArgumentBooleanValueByName(SEARCH_IN_CONTENTS)
                 .orElse(Boolean.FALSE);
 
         responseUpdater

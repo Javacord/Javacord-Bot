@@ -63,13 +63,13 @@ public class DocsSlashCommand extends BaseSlashCommand {
                 sendResponseLater(slashCommandInteraction);
 
         String searchTerm = slashCommandInteraction
-                .getOptionStringValueByName(SEARCH_TERM)
+                .getArgumentStringValueByName(SEARCH_TERM)
                 .orElse(null);
         String searchType = slashCommandInteraction
-                .getOptionStringValueByName(SEARCH_TYPE)
+                .getArgumentStringValueByName(SEARCH_TYPE)
                 .orElse(SEARCH_TYPE_MEMBERS);
         boolean includeAll = slashCommandInteraction
-                .getOptionBooleanValueByName(INCLUDE_ALL)
+                .getArgumentBooleanValueByName(INCLUDE_ALL)
                 .orElse(Boolean.FALSE);
 
         responseUpdater
