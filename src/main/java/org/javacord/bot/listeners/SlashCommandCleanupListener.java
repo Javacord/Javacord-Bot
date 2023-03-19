@@ -6,6 +6,7 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.DiscordEntity;
 import org.javacord.api.event.message.reaction.ReactionAddEvent;
 import org.javacord.api.listener.message.reaction.ReactionAddListener;
 
@@ -46,6 +47,12 @@ public class SlashCommandCleanupListener implements ReactionAddListener {
                     }
 
                     if (!message.getReactionByEmoji(WASTEBASKET).orElseThrow(AssertionError::new).containsYou()) {
+                        return completedFuture(null);
+                    }
+
+                    if (message.getMentionedUsers().stream()
+                            .mapToLong(DiscordEntity::getId)
+                            .noneMatch(id -> id == event.getUserId())) {
                         return completedFuture(null);
                     }
 
